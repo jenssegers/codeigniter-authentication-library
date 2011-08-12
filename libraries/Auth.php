@@ -8,7 +8,7 @@ class Auth {
 	
 	private $ci;
 	
-	public $error = array();
+	public $error = FALSE;
 	
 	public function __construct() {
 		$this->ci = &get_instance();
@@ -29,7 +29,7 @@ class Auth {
 			$this->autologin();
 	}
 	
-	public function authenticate($username, $password, $remember = FALSE) {
+	public function login($username, $password, $remember = FALSE) {
 		$user = $this->ci->m_users->get($username, 'username');
 		
 		if($user) {
@@ -47,13 +47,13 @@ class Auth {
 					return true;
 				}
 				else
-					$this->error[] = "wrong_password";
+					$this->error = "wrong_password";
 			}
 			else
-				$this->error[] = "not_activated";
+				$this->error = "not_activated";
 		}
 		else
-			$this->error[] = "not_found";
+			$this->error = "not_found";
 		
 		return false;
 	}
