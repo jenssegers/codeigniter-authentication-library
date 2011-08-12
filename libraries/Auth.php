@@ -58,6 +58,32 @@ class Auth {
 		return false;
 	}
 	
+	public function logout() {
+		$this->ci->session->sess_destroy();
+		$this->delete_autologin();
+		$this->ci->session->set_userdata('loggedin', FALSE);
+	}
+	
+	public function loggedin() {
+		return $this->ci->session->userdata('loggedin');
+	}
+	
+	public function userid() {
+		return $this->ci->session->userdata('userid');
+	}
+	
+	public function username() {
+		return $this->ci->session->userdata('username');
+	}
+	
+	public function hash($password) {
+		return $this->ci->passwordhash->HashPassword($password);
+	}
+	
+	public function error() {
+		return $this->error;
+	}
+	
 	private function create_autologin($id) {
 		$key = $this->generate_key();
 		
@@ -138,28 +164,6 @@ class Auth {
 	
 	private function generate_key() {
 		return md5(uniqid(rand().$this->ci->config->item('encryption_key')));
-	}
-	
-	public function logout() {
-		$this->ci->session->sess_destroy();
-		$this->delete_autologin();
-		$this->ci->session->set_userdata('loggedin', FALSE);
-	}
-	
-	public function loggedin() {
-		return $this->ci->session->userdata('loggedin');
-	}
-	
-	public function userid() {
-		return $this->ci->session->userdata('userid');
-	}
-	
-	public function username() {
-		return $this->ci->session->userdata('username');
-	}
-	
-	public function hash($password) {
-		return $this->ci->passwordhash->HashPassword($password);
 	}
 	
 	private function check_pass($password, $hash) {
