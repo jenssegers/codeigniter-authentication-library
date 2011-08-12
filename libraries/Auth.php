@@ -16,7 +16,7 @@ class Auth {
 		
 		/* load required libraries and models */
 		$this->ci->load->library('session');
-		$this->ci->load->library('PasswordHash');
+		$this->ci->load->library('PasswordHash', array("iteration_count_log2"=>8, "portable_hashes"=>FALSE));
 		$this->ci->load->model('m_users');
 		
 		/* get parameters from config if available */
