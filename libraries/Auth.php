@@ -5,6 +5,7 @@ class Auth {
 	
 	private $cookie_name = "autologin";
 	private $expiration = 8640000; // 100 days
+	private $encrypt_cookie = TRUE;
 	
 	private $ci;
 	
@@ -23,6 +24,8 @@ class Auth {
 			$this->cookie_name = $this->ci->config->item('autologin_cookie_name');
 		if($this->ci->config->item('autologin_expiration'))
 			$this->expiration = $this->ci->config->item('autologin_expiration');
+		if($this->ci->config->item('sess_encrypt_cookie'))
+			$this->encrypt_cookie = $this->ci->config->item('sess_encrypt_cookie');
 		
 		/* detect autologin */
 		if(!$this->ci->session->userdata('loggedin'))
@@ -92,9 +95,17 @@ class Auth {
 		$this->ci->m_autologin->purge($id);
 		
 		if($this->ci->m_autologin->insert($id, $key)) {
+			$data = serialize(array('id' => $id, 'key' => $key));
+			
+			/* encrypt cookie */
+			if($this->encrypt_cookie) {
+				$this->ci->load->library('encrypt');
+				$data = $this->ci->encrypt->encode($data);
+			}
+			
 			$this->ci->input->set_cookie(array(
 				'name' 		=> $this->cookie_name,
-				'value'		=> serialize(array('id' => $id, 'key' => $key)),
+				'value'		=> $data,
 				'expire'	=> $this->expiration
 			));
 			
@@ -106,7 +117,13 @@ class Auth {
 	
 	private function delete_autologin() {
 		if ($cookie = $this->ci->input->cookie($this->cookie_name, TRUE)) {
-			$data = unserialize($cookie);
+			/* decrypt cookie */
+			if($this->encrypt_cookie) {
+				$this->ci->load->library('encrypt');
+				$data = $this->ci->encrypt->decode($cookie);
+			}
+			
+			$data = unserialize($data);
 			
 			if (isset($data['id']) AND isset($data['key'])) {
 				$this->ci->load->model('m_autologin');
@@ -127,7 +144,13 @@ class Auth {
 	private function autologin() {
 		if(!$this->loggedin()) {
 			if ($cookie = $this->ci->input->cookie($this->cookie_name, TRUE)) {
-				$data = unserialize($cookie);
+				/* decrypt cookie */
+				if($this->encrypt_cookie) {
+					$this->ci->load->library('encrypt');
+					$data = $this->ci->encrypt->decode($cookie);
+				}
+				
+				$data = unserialize($data);
 				
 				if (isset($data['id']) AND isset($data['key'])) {
 					$this->ci->load->model('m_autologin');
@@ -146,9 +169,17 @@ class Auth {
 						$new_key = $this->generate_key();
 						
 						if($this->ci->m_autologin->update($data['id'], $data['key'], $new_key)) {
+							$data = serialize(array('id' => $data['id'], 'key' => $new_key));
+							
+							/* encrypt cookie */
+							if($this->encrypt_cookie) {
+								$this->ci->load->library('encrypt');
+								$data = $this->ci->encrypt->encode($data);
+							}
+							
 							$this->ci->input->set_cookie(array(
 								'name' 		=> $this->cookie_name,
-								'value'		=> serialize(array('id' => $data['id'], 'key' => $new_key)),
+								'value'		=> $data,
 								'expire'	=> $this->expiration
 							));
 						}
