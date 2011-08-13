@@ -35,9 +35,20 @@ Usage
 
 A simple implementation example of this library is included, so be sure to check out the example. These are the available methods:
 
-    login($username, $password, $remember) - authenticate a user using their credentials and choose whether or not to create an autologin cookie
-    logout() - logout function, destroys session and autologin keys
-    loggedin() - returns whether the user is logged in or not, TRUE/FALSE
-    userid() - returns the current user's id
-    username() - returns the current user's username
-    hash($password) - returns the hashed password to store in the database (to use in your model)
+    login($username, $password, $remember)
+authenticate a user using their credentials and choose whether or not to create an autologin cookie
+	
+    logout()
+logout function, destroys session and autologin keys
+
+    loggedin()
+returns whether the user is logged in or not, TRUE/FALSE
+
+    userid()
+returns the current user's id
+
+    username()
+returns the current user's username
+
+    hash($password)
+returns the hashed password to store in the database (to use in your model)
