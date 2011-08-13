@@ -1,10 +1,6 @@
-<?php if(isset($errors)): ?>
+<?php if(isset($error)): ?>
 <div class="errors">
-	<?php 
-	foreach($errors as $error) {
-		echo $error."<br />";
-	}
-	?>
+	<?php echo $error; ?>
 </div>
 <?php endif; ?>
 
