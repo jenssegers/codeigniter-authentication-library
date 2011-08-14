@@ -94,7 +94,7 @@ class Auth {
 		$this->ci->load->model('m_autologin');
 		$this->ci->m_autologin->purge($id);
 		
-		if($this->ci->m_autologin->insert($id, $key)) {
+		if($this->ci->m_autologin->insert($id, md5($key))) {
 			$data = serialize(array('id' => $id, 'key' => $key));
 			
 			/* encrypt cookie */
@@ -127,7 +127,7 @@ class Auth {
 			
 			if (isset($data['id']) AND isset($data['key'])) {
 				$this->ci->load->model('m_autologin');
-				$this->ci->m_autologin->delete($data['id'], $data['key']);
+				$this->ci->m_autologin->delete($data['id'], md5($data['key']));
 			}
 			
 			/* delete cookie */
@@ -155,7 +155,7 @@ class Auth {
 				if (isset($data['id']) AND isset($data['key'])) {
 					$this->ci->load->model('m_autologin');
 					
-					if($this->ci->m_autologin->exists($data['id'], $data['key'])) {
+					if($this->ci->m_autologin->exists($data['id'], md5($data['key']))) {
 						$user = $this->ci->m_users->get($data['id']);
 						
 						/* logged in */
@@ -168,7 +168,7 @@ class Auth {
 						/* refresh key */
 						$new_key = $this->generate_key();
 						
-						if($this->ci->m_autologin->update($data['id'], $data['key'], $new_key)) {
+						if($this->ci->m_autologin->update($data['id'], md5($data['key']), md5($new_key))) {
 							$data = serialize(array('id' => $data['id'], 'key' => $new_key));
 							
 							/* encrypt cookie */
