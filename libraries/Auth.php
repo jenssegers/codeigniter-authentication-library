@@ -6,6 +6,7 @@ class Auth {
 	private $cookie_name = "autologin";
 	private $expiration = 8640000; // 100 days
 	private $encrypt_cookie = TRUE;
+	private $hash_algo = "sha256"; // for autologin token
 	
 	private $ci;
 	
@@ -24,8 +25,12 @@ class Auth {
 			$this->cookie_name = $this->ci->config->item('autologin_cookie_name');
 		if($this->ci->config->item('autologin_expiration'))
 			$this->expiration = $this->ci->config->item('autologin_expiration');
-		if($this->ci->config->item('sess_encrypt_cookie'))
+		if($this->ci->config->item('autologin_encrypt'))
+			$this->encrypt_cookie = $this->ci->config->item('autologin_encrypt');
+		elseif($this->ci->config->item('sess_encrypt_cookie'))
 			$this->encrypt_cookie = $this->ci->config->item('sess_encrypt_cookie');
+		if($this->ci->config->item('autologin_hash_algo'))
+			$this->hash_algo = $this->ci->config->item('autologin_hash_algo');
 		
 		/* detect autologin */
 		if(!$this->ci->session->userdata('loggedin'))
@@ -94,7 +99,7 @@ class Auth {
 		$this->ci->load->model('m_autologin');
 		$this->ci->m_autologin->purge($id);
 		
-		if($this->ci->m_autologin->insert($id, md5($key))) {
+		if($this->ci->m_autologin->insert($id, hash($this->hash_algo, $key))) {
 			$data = serialize(array('id' => $id, 'key' => $key));
 			
 			/* encrypt cookie */
@@ -127,7 +132,7 @@ class Auth {
 			
 			if (isset($data['id']) AND isset($data['key'])) {
 				$this->ci->load->model('m_autologin');
-				$this->ci->m_autologin->delete($data['id'], md5($data['key']));
+				$this->ci->m_autologin->delete($data['id'], hash($this->hash_algo, $data['key']));
 			}
 			
 			/* delete cookie */
@@ -155,7 +160,7 @@ class Auth {
 				if (isset($data['id']) AND isset($data['key'])) {
 					$this->ci->load->model('m_autologin');
 					
-					if($this->ci->m_autologin->exists($data['id'], md5($data['key']))) {
+					if($this->ci->m_autologin->exists($data['id'], hash($this->hash_algo, $data['key']))) {
 						$user = $this->ci->m_users->get($data['id']);
 						
 						/* logged in */
@@ -168,7 +173,7 @@ class Auth {
 						/* refresh key */
 						$new_key = $this->generate_key();
 						
-						if($this->ci->m_autologin->update($data['id'], md5($data['key']), md5($new_key))) {
+						if($this->ci->m_autologin->update($data['id'], hash($this->hash_algo, $data['key']), hash($this->hash_algo, $new_key))) {
 							$data = serialize(array('id' => $data['id'], 'key' => $new_key));
 							
 							/* encrypt cookie */
@@ -194,7 +199,7 @@ class Auth {
 	}
 	
 	private function generate_key() {
-		return md5(uniqid(rand().$this->ci->config->item('encryption_key')));
+		return hash($this->hash_algo, uniqid(rand().$this->ci->config->item('encryption_key')));
 	}
 	
 	private function check_pass($password, $hash) {
