@@ -2,7 +2,7 @@
 /**
 * @name			CodeIgniter Secure Authentication Library
 * @author		Jens Segers
-* @author_url	http://www.jenssegers.be
+* @link			http://www.jenssegers.be
 * @license		MIT License Copyright (c) 2011 Jens Segers
 * 
 * Permission is hereby granted, free of charge, to any person obtaining a copy
