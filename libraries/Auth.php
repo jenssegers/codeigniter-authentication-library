@@ -32,6 +32,7 @@ class Auth {
 	private $expiration = 8640000; // 100 days
 	private $encrypt_cookie = TRUE;
 	private $hash_algo = "sha256"; // for autologin token
+	private $model_name = "m_users";
 	
 	private $ci;
 	
@@ -43,7 +44,11 @@ class Auth {
 		/* load required libraries and models */
 		$this->ci->load->library('session');
 		$this->ci->load->library('PasswordHash', array("iteration_count_log2"=>8, "portable_hashes"=>FALSE));
-		$this->ci->load->model('m_users');
+		$this->ci->load->model($this->model_name);
+		
+		/* HVMC support for modules */
+		if(strstr($this->model_name, "/"))
+			$this->model_name = end(explode("/", $this->model_name));
 		
 		/* get parameters from config if available */
 		if($this->ci->config->item('autologin_cookie_name'))
@@ -63,7 +68,7 @@ class Auth {
 	}
 	
 	public function login($username, $password, $remember = FALSE) {
-		$user = $this->ci->m_users->get($username, 'username');
+		$user = $this->ci->{$this->model_name}->get($username, 'username');
 		
 		if($user) {
 			if($user["activated"]) {
@@ -186,7 +191,7 @@ class Auth {
 					$this->ci->load->model('m_autologin');
 					
 					if($this->ci->m_autologin->exists($data['id'], hash($this->hash_algo, $data['key']))) {
-						$user = $this->ci->m_users->get($data['id']);
+						$user = $this->ci->{$this->model_name}->get($data['id']);
 						
 						/* logged in */
 						$this->ci->session->set_userdata(array(
