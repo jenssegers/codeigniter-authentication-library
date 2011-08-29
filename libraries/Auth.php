@@ -32,7 +32,10 @@ class Auth {
 	private $expiration = 8640000; // 100 days
 	private $encrypt_cookie = TRUE;
 	private $hash_algo = "sha256"; // for autologin token
-	private $model_name = "m_users";
+	
+	/* models */
+	private $user_model = "m_users";
+	private $autologin_model = "m_autologin";
 	
 	private $ci;
 	
@@ -44,9 +47,9 @@ class Auth {
 		/* load required libraries and models */
 		$this->ci->load->library('session');
 		$this->ci->load->library('PasswordHash', array("iteration_count_log2"=>8, "portable_hashes"=>FALSE));
-		$this->ci->load->model($this->model_name);
 		
-		/* HVMC support for modules */
+		/* HVMC support */
+		$this->ci->load->model($this->model_name);
 		if(strstr($this->model_name, "/"))
 			$this->model_name = end(explode("/", $this->model_name));
 		
@@ -125,11 +128,14 @@ class Auth {
 	private function create_autologin($id) {
 		$key = $this->generate_key();
 		
-		/* clean old keys on this ip */
-		$this->ci->load->model('m_autologin');
-		$this->ci->m_autologin->purge($id);
+		/* HVMC support */
+		$this->ci->load->model($this->autologin_model);
+		$autologin_model = strstr($this->autologin_model, "/")?end(explode("/", $this->autologin_model)):$this->autologin_model;
 		
-		if($this->ci->m_autologin->insert($id, hash($this->hash_algo, $key))) {
+		/* clean old keys on this ip */
+		$this->ci->{$autologin_model}->purge($id);
+		
+		if($this->ci->{$autologin_model}->insert($id, hash($this->hash_algo, $key))) {
 			$data = serialize(array('id' => $id, 'key' => $key));
 			
 			/* encrypt cookie */
@@ -161,8 +167,11 @@ class Auth {
 			$data = unserialize($data);
 			
 			if (isset($data['id']) AND isset($data['key'])) {
-				$this->ci->load->model('m_autologin');
-				$this->ci->m_autologin->delete($data['id'], hash($this->hash_algo, $data['key']));
+				/* HVMC support */
+				$this->ci->load->model($this->autologin_model);
+				$autologin_model = strstr($this->autologin_model, "/")?end(explode("/", $this->autologin_model)):$this->autologin_model;
+				
+				$this->ci->{$autologin_model}->delete($data['id'], hash($this->hash_algo, $data['key']));
 			}
 			
 			/* delete cookie */
@@ -188,9 +197,11 @@ class Auth {
 				$data = unserialize($data);
 				
 				if (isset($data['id']) AND isset($data['key'])) {
-					$this->ci->load->model('m_autologin');
+					/* HVMC support */
+					$this->ci->load->model($this->autologin_model);
+					$autologin_model = strstr($this->autologin_model, "/")?end(explode("/", $this->autologin_model)):$this->autologin_model;
 					
-					if($this->ci->m_autologin->exists($data['id'], hash($this->hash_algo, $data['key']))) {
+					if($this->ci->{$autologin_model}->exists($data['id'], hash($this->hash_algo, $data['key']))) {
 						$user = $this->ci->{$this->model_name}->get($data['id']);
 						
 						/* logged in */
@@ -203,7 +214,7 @@ class Auth {
 						/* refresh key */
 						$new_key = $this->generate_key();
 						
-						if($this->ci->m_autologin->update($data['id'], hash($this->hash_algo, $data['key']), hash($this->hash_algo, $new_key))) {
+						if($this->ci->{$autologin_model}->update($data['id'], hash($this->hash_algo, $data['key']), hash($this->hash_algo, $new_key))) {
 							$data = serialize(array('id' => $data['id'], 'key' => $new_key));
 							
 							/* encrypt cookie */
