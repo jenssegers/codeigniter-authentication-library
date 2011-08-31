@@ -164,7 +164,7 @@ class Auth {
 				$data = $this->ci->encrypt->decode($cookie);
 			}
 			
-			$data = unserialize($data);
+			$data = @unserialize($data);
 			
 			if (isset($data['id']) AND isset($data['key'])) {
 				/* HVMC support */
@@ -194,7 +194,7 @@ class Auth {
 					$data = $this->ci->encrypt->decode($cookie);
 				}
 				
-				$data = unserialize($data);
+				$data = @unserialize($data);
 				
 				if (isset($data['id']) AND isset($data['key'])) {
 					/* HVMC support */
