@@ -20,15 +20,19 @@ In your config.php add the following configuration parameters (optional):
     |--------------------------------------------------------------------------
     |
     | 'autologin_cookie_name' = the name you want for the cookie
-    | 'autologin_expiration'  = the number of SECONDS you want the session to last.
+    | 'autologin_expiration'  = the number of SECONDS you want the session to last
+    | 'autologin_encrypt'     = encrypt cookie with encryption_key
+    | 'autologin_hash_algo'   = the hashing algorithm used for autologin keys
     |
     */
     $config['autologin_cookie_name'] = "autologin";
     $config['autologin_expiration']  = 31536000; // 1 year
+    $config['autologin_encrypt']     = TRUE;
+    $config['autologin_hash_algo']   = "sha256";
 
 If you prefer, you can autoload the library by adjusting your autoload.php file and add 'auth' to the $autoload['libraries'] array.
 
-This library will detect if you have enabled $config['sess_encrypt_cookie'] and will encrypt the autologin cookie if so. This obscures the cookie for extra protection.
+This library will detect if you have enabled sess_encrypt_cookie and will encrypt the autologin cookie if you did not specify autologin_encrypt. Encrypting obscures the cookie for extra protection.
 	
 Usage
 -----
@@ -52,6 +56,15 @@ returns the current user's username
 
     $this->auth->hash($password)
 returns the hashed password to store in the database (to use in your model)
+
+If the login would fail, an error message is stored in $this->auth->error.
+
+Model communication
+-------------------
+
+This library does not serve as a model for your user database. This library is developed in such a way that it can be coupled to whatever user model you are using. Many other authentication act as a model (or a facade). This is not what I wanted for this library, because libraries should be exchangeable between projects.
+
+The library only uses the get($id) method of the included example model to retrieve a specific user's information. Feel free to change the model name and methods to adjust the library to your environment.
 
 Controller example
 ------------------
