@@ -49,9 +49,9 @@ class Auth {
 		$this->ci->load->library('PasswordHash', array("iteration_count_log2"=>8, "portable_hashes"=>FALSE));
 		
 		/* HVMC support */
-		$this->ci->load->model($this->model_name);
-		if(strstr($this->model_name, "/"))
-			$this->model_name = end(explode("/", $this->model_name));
+		$this->ci->load->model($this->user_model);
+		if(strstr($this->user_model, "/"))
+			$this->user_model = end(explode("/", $this->user_model));
 		
 		/* get parameters from config if available */
 		if($this->ci->config->item('autologin_cookie_name'))
@@ -71,7 +71,7 @@ class Auth {
 	}
 	
 	public function login($username, $password, $remember = FALSE) {
-		$user = $this->ci->{$this->model_name}->get($username, 'username');
+		$user = $this->ci->{$this->user_model}->get($username, 'username');
 		
 		if($user) {
 			if($user["activated"]) {
