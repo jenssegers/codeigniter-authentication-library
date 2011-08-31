@@ -278,7 +278,7 @@ class Auth {
 	 * Checks the given password with the correct hash (using phpass)
 	 * @param string $password
 	 * @param string $hash
-	 * @return string
+	 * @return boolean
 	 */
 	private function check_pass($password, $hash) {
 		return $this->ci->passwordhash->CheckPassword($password, $hash);
