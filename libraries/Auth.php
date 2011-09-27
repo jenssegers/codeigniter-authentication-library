@@ -35,9 +35,12 @@ class Auth {
 	private $encrypt_cookie = TRUE;
 	private $hash_algo = "sha256";
 	
+	/* the field that is used to identify the user */
+	private $identification = "email";
+	
 	/* models */
-	private $user_model = "m_users";
-	private $autologin_model = "m_autologin";
+	private $user_model = "user_model";
+	private $autologin_model = "autologin_model";
 	
 	private $ci;
 	
@@ -70,6 +73,8 @@ class Auth {
 			$this->user_model = $this->ci->config->item('autologin_user_model');
 		if ($this->ci->config->item('autologin_autologin_model'))
 			$this->autologin_model = $this->ci->config->item('autologin_autologin_model');
+		if ($this->ci->config->item('autologin_identification'))
+			$this->identification = $this->ci->config->item('autologin_identification');
 			
 		/* detect autologin */
 		if (! $this->ci->session->userdata('loggedin'))
@@ -79,29 +84,25 @@ class Auth {
 	/**
 	 * Authenticate a user using their credentials and choose whether or not to create an autologin cookie
 	 * Returns TRUE if login is successful, false otherwise
-	 * @param string $username
+	 * @param string $identification
 	 * @param string $password
 	 * @param boolean $remember
 	 * @return boolean
 	 */
-	public function login($username, $password, $remember = FALSE) {
-		$user = $this->ci->{$this->user_model}->get($username, 'username');
+	public function login($identification, $password, $remember = FALSE) {
+		$user = $this->ci->{$this->user_model}->get($identification, $this->identification);
 		
 		if ($user) {
-			if ($user["activated"]) {
-				if ($this->check_pass($password, $user['password'])) {
-					$this->ci->session->set_userdata(array('userid' => $user['id'], 'username' => $user['username'], 'loggedin' => TRUE));
-					
-					if ($remember)
-						$this->create_autologin($user['id']);
-					
-					return TRUE;
-				}
-				else
-					$this->error = "wrong_password";
+			if ($this->check_pass($password, $user['password'])) {
+				$this->ci->session->set_userdata(array('userid' => $user['id'], $this->identification => $user[$this->identification], 'loggedin' => TRUE));
+				
+				if ($remember)
+					$this->create_autologin($user['id']);
+				
+				return TRUE;
 			}
 			else
-				$this->error = "not_activated";
+				$this->error = "wrong_password";
 		}
 		else
 			$this->error = "not_found";
@@ -135,11 +136,11 @@ class Auth {
 	}
 	
 	/**
-	 * Returns the username of the current user if logged in
+	 * Returns the identification field of the current user if logged in
 	 * @return int
 	 */
-	public function username() {
-		return $this->ci->session->userdata('username');
+	public function identification() {
+		return $this->ci->session->userdata($this->identification);
 	}
 	
 	/**
@@ -240,7 +241,7 @@ class Auth {
 						$user = $this->ci->{$this->model_name}->get($data['id']);
 						
 						/* logged in */
-						$this->ci->session->set_userdata(array('userid' => $user['id'], 'username' => $user['username'], 'loggedin' => TRUE));
+						$this->ci->session->set_userdata(array('userid' => $user['id'], $this->identification => $user[$this->identification], 'loggedin' => TRUE));
 						
 						/* refresh key */
 						$new_key = $this->generate_key();
