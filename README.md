@@ -23,12 +23,14 @@ In your config.php add the following configuration parameters (optional):
     | 'autologin_expiration'  = the number of SECONDS you want the session to last
     | 'autologin_encrypt'     = encrypt cookie with encryption_key
     | 'autologin_hash_algo'   = the hashing algorithm used for autologin keys
+	| 'autologin_identification = the user field that is used to identify the user
     |
     */
     $config['autologin_cookie_name'] = "autologin";
     $config['autologin_expiration']  = 31536000; // 1 year
     $config['autologin_encrypt']     = TRUE;
     $config['autologin_hash_algo']   = "sha256";
+	$config['autologin_identification'] = "email";
 
 If you prefer, you can autoload the library by adjusting your autoload.php file and add 'auth' to the $autoload['libraries'] array.
 
@@ -39,7 +41,7 @@ Usage
 
 A simple implementation example of this library is included, so be sure to check out the example. These are the available methods:
 
-    $this->auth->login($username, $password, $remember)
+    $this->auth->login($identification, $password, $remember)
 authenticate a user using their credentials and choose whether or not to create an autologin cookie
 	
     $this->auth->logout()
@@ -51,8 +53,8 @@ returns whether the user is logged in or not, TRUE/FALSE
     $this->auth->userid()
 returns the current user's id
 
-    $this->auth->username()
-returns the current user's username
+    $this->auth->identification()
+returns the current user's identification field
 
     $this->auth->hash($password)
 returns the hashed password to store in the database (to use in your model)
