@@ -30,9 +30,11 @@ In your config.php add the following configuration parameters (optional):
     $config['autologin_expiration']  = 31536000; // 1 year
     $config['autologin_encrypt']     = TRUE;
     $config['autologin_hash_algo']   = "sha256";
-	$config['autologin_identification'] = "email";
+	$config['autologin_identification'] = "username";
 
 If you prefer, you can autoload the library by adjusting your autoload.php file and add 'auth' to the $autoload['libraries'] array.
+
+The identification field is the user database field you use to identify your users, this will also be the name of the form variable. If you want to identify your users using an email adress, change this field to 'email' (as well as your form field).
 
 This library will detect if you have enabled sess_encrypt_cookie and will encrypt the autologin cookie if you did not specify autologin_encrypt. Encrypting obscures the cookie for extra protection.
 	
