@@ -4,6 +4,9 @@ class Logout extends CI_Controller {
 
 	public function index()
 	{
+		/* if you did not autoload the library */
+		$this->load->library("auth");
+	
 		$this->auth->logout();
 		redirect("login");
 	}
