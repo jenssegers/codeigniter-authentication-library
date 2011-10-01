@@ -4,7 +4,13 @@ class Admin extends CI_Controller {
 
 	public function index()
 	{
-		echo "Super secret section";
+		/* if you did not autoload the library */
+		$this->load->library("auth");
+		
+		if(!$this->auth->loggedin())
+			redirect("login");
+		
+		echo "Welcome to the super secret section, ".$this->auth->identification();
 	}
 	
 }
