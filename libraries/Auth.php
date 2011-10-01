@@ -35,8 +35,8 @@ class Auth {
 	private $encrypt_cookie = TRUE;
 	private $hash_algo = "sha256";
 	
-	/* the field that is used to identify the user */
-	private $identification = "email";
+	/* the field that is used to identify the user (this is your database & form field!) */
+	private $identification = "username";
 	
 	/* models */
 	private $user_model = "user_model";

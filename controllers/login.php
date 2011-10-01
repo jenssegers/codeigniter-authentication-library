@@ -4,6 +4,9 @@ class Login extends CI_Controller {
 
 	public function index()
 	{
+		/* if you did not autoload the library */
+		$this->load->library("auth");
+		
 		$this->load->helper("form");
 		
 		if($this->auth->loggedin()) {
