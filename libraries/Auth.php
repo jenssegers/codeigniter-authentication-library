@@ -238,7 +238,7 @@ class Auth {
 					$autologin_model = strstr($this->autologin_model, "/") ? end(explode("/", $this->autologin_model)) : $this->autologin_model;
 					
 					if ($this->ci->{$autologin_model}->exists($data['id'], hash($this->hash_algo, $data['key']))) {
-						$user = $this->ci->{$this->model_name}->get($data['id']);
+						$user = $this->ci->{$this->user_model}->get($data['id']);
 						
 						/* logged in */
 						$this->ci->session->set_userdata(array('userid' => $user['id'], $this->identification => $user[$this->identification], 'loggedin' => TRUE));
