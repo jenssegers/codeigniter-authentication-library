@@ -93,16 +93,20 @@ class Auth {
 		$user = $this->ci->{$this->user_model}->get($identification, $this->identification);
 		
 		if ($user) {
-			if ($this->check_pass($password, $user['password'])) {
-				$this->ci->session->set_userdata(array('userid' => $user['id'], $this->identification => $user[$this->identification], 'loggedin' => TRUE));
-				
-				if ($remember)
-					$this->create_autologin($user['id']);
-				
-				return TRUE;
+			if($user["activated"]) {
+				if ($this->check_pass($password, $user['password'])) {
+					$this->ci->session->set_userdata(array('userid' => $user['id'], $this->identification => $user[$this->identification], 'loggedin' => TRUE));
+					
+					if ($remember)
+						$this->create_autologin($user['id']);
+					
+					return TRUE;
+				}
+				else
+					$this->error = "wrong_password";
 			}
 			else
-				$this->error = "wrong_password";
+				$this->error = "not_activated";
 		}
 		else
 			$this->error = "not_found";
