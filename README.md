@@ -55,8 +55,11 @@ returns whether the user is logged in or not, TRUE/FALSE
     $this->auth->userid()
 returns the current user's id
 
-    $this->auth->identification()
-returns the current user's identification field
+    $this->auth->username() # or how your column is called
+returns the current user's username
+
+    $this->auth->email() # or how your column is called
+returns the current user's email
 
     $this->auth->hash($password)
 returns the hashed password to store in the database (to use in your model)
@@ -74,6 +77,9 @@ Controller example
 ------------------
 
 	if($this->auth->loggedin()) {
+		$id  = $this->auth->userid():
+		$username = $this->auth->username();
+	
 		/* user is already logged in */
 		redirect("admin");
 	}
