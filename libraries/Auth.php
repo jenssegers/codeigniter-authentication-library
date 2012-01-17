@@ -60,24 +60,14 @@ class Auth {
         $this->ci->load->model($this->user_model);
         if (strstr($this->user_model, "/"))
             $this->user_model = end(explode("/", $this->user_model));
-            
-        /* get parameters from config if available */
-        if ($this->ci->config->item('autologin_cookie_name'))
-            $this->cookie_name = $this->ci->config->item('autologin_cookie_name');
-        if ($this->ci->config->item('autologin_expiration'))
-            $this->expiration = $this->ci->config->item('autologin_expiration');
-        if ($this->ci->config->item('autologin_encrypt'))
-            $this->encrypt_cookie = $this->ci->config->item('autologin_encrypt');
-        elseif ($this->ci->config->item('sess_encrypt_cookie'))
-            $this->encrypt_cookie = $this->ci->config->item('sess_encrypt_cookie');
-        if ($this->ci->config->item('autologin_hash_algo'))
-            $this->hash_algo = $this->ci->config->item('autologin_hash_algo');
-        if ($this->ci->config->item('autologin_user_model'))
-            $this->user_model = $this->ci->config->item('autologin_user_model');
-        if ($this->ci->config->item('autologin_autologin_model'))
-            $this->autologin_model = $this->ci->config->item('autologin_autologin_model');
-        if ($this->ci->config->item('autologin_identification'))
-            $this->identification = $this->ci->config->item('autologin_identification');
+        
+        /* get settings from config */
+        $props = array('cookie_name', 'expiration', 'encrypt_cookie', 'hash_algo', 'user_model', 'autologin_model', 'identification');
+		foreach ($props as $val) {
+		    if ($this->ci->config->item('autologin_'.$val)) {
+			    $this->$val = $this->ci->config->item('autologin_'.$val);
+		    }
+		}
             
         /* detect autologin */
         if (!$this->ci->session->userdata('loggedin'))

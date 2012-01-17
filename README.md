@@ -15,22 +15,22 @@ Configuration
 In your config.php add the following configuration parameters (optional):
 
     /*
-    |--------------------------------------------------------------------------
-    | Autologin
-    |--------------------------------------------------------------------------
-    |
-    | 'autologin_cookie_name' = the name you want for the cookie
-    | 'autologin_expiration'  = the number of SECONDS you want the session to last
-    | 'autologin_encrypt'     = encrypt cookie with encryption_key
-    | 'autologin_hash_algo'   = the hashing algorithm used for autologin keys
-	| 'autologin_identification = the user field that is used to identify the user
-    |
-    */
-    $config['autologin_cookie_name'] = "autologin";
-    $config['autologin_expiration']  = 31536000; // 1 year
-    $config['autologin_encrypt']     = TRUE;
-    $config['autologin_hash_algo']   = "sha256";
-	$config['autologin_identification'] = "username";
+	|--------------------------------------------------------------------------
+	| Autologin
+	|--------------------------------------------------------------------------
+	|
+	| 'autologin_cookie_name'    = the name you want for the cookie
+	| 'autologin_expiration'     = the number of SECONDS you want the session to last
+	| 'autologin_encrypt_cookie' = encrypt cookie with encryption_key
+	| 'autologin_hash_algo'      = the hashing algorithm used for autologin keys
+	| 'autologin_identification' = the user field that is used to identify the user
+	|
+	*/
+	$config['autologin_cookie_name']    = "autologin";
+	$config['autologin_expiration']     = 31536000; // 1 year
+	$config['autologin_encrypt_cookie'] = TRUE;
+	$config['autologin_hash_algo']      = "sha256";
+	$config['autologin_identification'] = "email";
 
 If you prefer, you can autoload the library by adjusting your autoload.php file and add 'auth' to the $autoload['libraries'] array.
 
