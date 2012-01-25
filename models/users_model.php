@@ -1,6 +1,6 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed');
 
-class m_users extends CI_Model
+class Users_model extends CI_Model
 {
 	public function insert($user) {
 		$user['password'] = $this->auth->hash($user['password']);
