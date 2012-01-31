@@ -9,7 +9,6 @@ class Install extends CI_Controller {
      * to the database, please remove this controller afterwards.
      */
     public function index() {
-        $this->load->library("auth");
         $this->load->model("user_model");
         
         /* EDIT THESE FIELDS */
@@ -22,3 +21,6 @@ class Install extends CI_Controller {
         $id = $this->user_model->insert($user);
     }
 }
+
+/* End of file install.php */
+/* Location: ./application/controllers/install.php */

@@ -13,6 +13,9 @@ class User_model extends CI_Model {
      * @return int id
      */
     public function insert($user) {
+        // need the library for hashing the password
+        $this->load->library("auth");
+        
         $user['password'] = $this->auth->hash($user['password']);
         $user['registered'] = time();
         
@@ -28,10 +31,14 @@ class User_model extends CI_Model {
      * @return int id
      */
     public function update($id, $user) {
-        if (isset($user['password']) && $user['password'])
+        // prevent overwriting with a blank password
+        if (isset($user['password']) && $user['password']) {
+            // need the library for hashing the password
+            $this->load->library("auth");
             $user['password'] = $this->auth->hash($user['password']);
-        else
+        } else {
             unset($user['password']);
+        }
         
         $this->db->where('id', $id)->update('users', $user);
         return $id;
