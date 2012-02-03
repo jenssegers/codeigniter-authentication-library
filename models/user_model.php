@@ -6,6 +6,9 @@ defined('BASEPATH') or exit('No direct script access allowed');
  */
 class User_model extends CI_Model {
     
+    // database table name
+    var $table = 'users';
+    
     /**
      * Add a user, password will be hashed
      * 
@@ -19,7 +22,7 @@ class User_model extends CI_Model {
         $user['password'] = $this->auth->hash($user['password']);
         $user['registered'] = time();
         
-        $this->db->insert('users', $user);
+        $this->db->insert($this->table, $user);
         return $this->db->insert_id();
     }
     
@@ -40,7 +43,7 @@ class User_model extends CI_Model {
             unset($user['password']);
         }
         
-        $this->db->where('id', $id)->update('users', $user);
+        $this->db->where('id', $id)->update($this->table, $user);
         return $id;
     }
     
@@ -51,7 +54,7 @@ class User_model extends CI_Model {
      * @param string identification field
      */
     public function delete($key, $where = 'id') {
-        $this->db->where($where, $key)->limit(1)->delete('users');
+        $this->db->where($where, $key)->delete($this->table);
     }
     
     /**
@@ -61,7 +64,7 @@ class User_model extends CI_Model {
      * @param string identification field
      */
     public function get($key, $where = 'id') {
-        $user = $this->db->where($where, $key)->get('users')->row_array();
+        $user = $this->db->where($where, $key)->get($this->table)->row_array();
         return $user;
     }
     
@@ -72,8 +75,23 @@ class User_model extends CI_Model {
      * @param int offset
      * @return array users
      */
-    public function get_list($limit = null, $offset = null) {
-        return $this->db->order_by("name")->get("users")->limit($limit, $offset)->result_array();
+    public function get_list($limit = FALSE, $offset = FALSE) {
+        if ($limit) {
+            return $this->db->order_by("name")->limit($limit, $offset)->get($this->table)->result_array();
+        } else {
+            return $this->db->order_by("name")->get($this->table)->result_array();
+        }
+    }
+    
+    /**
+     * Check if a user exists
+     * 
+     * @param int key
+     * @param string identification field
+     */
+    
+    public function exists($key, $where = 'id') {
+        return $this->db->where($where, $key)->get($this->table)->num_rows();
     }
     
     /**
