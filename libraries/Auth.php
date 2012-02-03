@@ -29,27 +29,22 @@ if (!defined("BASEPATH"))
 
 class Auth {
     
-    /* default values */
-    private $cookie_name = "autologin";
-    private $expiration = 8640000;
-    private $encrypt_cookie = TRUE;
-    private $hash_algo = "sha256";
-    
-    /* the field that is used to identify the user (this is your database & form field!) */
+    /* basic settings default values */
+    private $cookie_name    = "autologin";
+    private $cookie_expire  = 8640000;
+    private $cookie_encrypt = TRUE;
+    private $hash_algorithm = "sha256";
     private $identification = "username";
     
-    /* the primary key for your users database */
+    /* model options default values */
     private $primary_key = "id";
-    
-    /* models */
-    private $user_model = "user_model";
+    private $user_model  = "user_model";
     private $autologin_model = "autologin_model";
     
     private $ci;
-    
     public $error = FALSE;
     
-    public function __construct() {
+    public function __construct($config = array()) {
         $this->ci = &get_instance();
         
         /* load required libraries and models */
@@ -58,20 +53,31 @@ class Auth {
         
         /* HVMC support */
         $this->ci->load->model($this->user_model);
-        if (strstr($this->user_model, "/"))
-            $this->user_model = end(explode("/", $this->user_model));
+        if (strstr($this->user_model, '/')) {
+            $this->user_model = end(explode('/', $this->user_model));
+        }
         
-        /* get settings from config */
-        $props = array('cookie_name', 'expiration', 'encrypt_cookie', 'hash_algo', 'user_model', 'autologin_model', 'identification');
-		foreach ($props as $val) {
-		    if ($this->ci->config->item('autologin_'.$val)) {
-			    $this->$val = $this->ci->config->item('autologin_'.$val);
-		    }
-		}
-            
+        /* initialize from config */
+        if (!empty($config)) {
+            $this->initialize($config);
+        }
+        
+        log_message('debug', 'Authentication library initialized');
+        
         /* detect autologin */
-        if (!$this->ci->session->userdata('loggedin'))
+        if (!$this->ci->session->userdata('loggedin')) {
             $this->autologin();
+        }
+    }
+    
+    /**
+     * Initialize with configuration array
+     * @param array $config
+     */
+    public function initialize($config = array()) {
+        foreach ($config as $key => $val) {
+            $this->$key = $val;
+        }
     }
     
     /**
@@ -84,8 +90,9 @@ class Auth {
     public function __call($name, $arguments) {
         if ($this->loggedin()) {
             $user = $this->ci->session->userdata('user');
-            if (isset($user[$name]))
+            if (isset($user[$name])) {
                 return $user[$name];
+            }
         }
         return FALSE;
     }
@@ -108,16 +115,20 @@ class Auth {
                     unset($user["password"]);
                     $this->ci->session->set_userdata(array('user' => $user, 'loggedin' => TRUE));
                     
-                    if ($remember)
+                    if ($remember) {
                         $this->create_autologin($user[$this->primary_key]);
+                    }
                     
                     return TRUE;
-                } else
+                } else {
                     $this->error = "wrong_password";
-            } else
+                }
+            } else {
                 $this->error = "not_activated";
-        } else
+            }
+        } else {
             $this->error = "not_found";
+        }
         
         return FALSE;
     }
@@ -189,16 +200,16 @@ class Auth {
         /* clean old keys on this ip */
         $this->ci->{$autologin_model}->purge($id);
         
-        if ($this->ci->{$autologin_model}->insert($id, hash($this->hash_algo, $key))) {
+        if ($this->ci->{$autologin_model}->insert($id, hash($this->hash_algorithm, $key))) {
             $data = serialize(array('id' => $id, 'key' => $key));
             
             /* encrypt cookie */
-            if ($this->encrypt_cookie) {
+            if ($this->cookie_encrypt) {
                 $this->ci->load->library('encrypt');
                 $data = $this->ci->encrypt->encode($data);
             }
             
-            $this->ci->input->set_cookie(array('name' => $this->cookie_name, 'value' => $data, 'expire' => $this->expiration));
+            $this->ci->input->set_cookie(array('name' => $this->cookie_name, 'value' => $data, 'expire' => $this->cookie_expire));
             
             return TRUE;
         }
@@ -212,7 +223,7 @@ class Auth {
     private function delete_autologin() {
         if ($cookie = $this->ci->input->cookie($this->cookie_name, TRUE)) {
             /* decrypt cookie */
-            if ($this->encrypt_cookie) {
+            if ($this->cookie_encrypt) {
                 $this->ci->load->library('encrypt');
                 $data = $this->ci->encrypt->decode($cookie);
             }
@@ -225,7 +236,7 @@ class Auth {
                 $autologin_model = strstr($this->autologin_model, "/") ? end(explode("/", $this->autologin_model)) : $this->autologin_model;
                 
                 /* delete the key */
-                $this->ci->{$autologin_model}->delete($data['id'], hash($this->hash_algo, $data['key']));
+                $this->ci->{$autologin_model}->delete($data['id'], hash($this->hash_algorithm, $data['key']));
             }
             
             /* delete cookie */
@@ -241,7 +252,7 @@ class Auth {
         if (!$this->loggedin()) {
             if ($cookie = $this->ci->input->cookie($this->cookie_name, TRUE)) {
                 /* decrypt cookie */
-                if ($this->encrypt_cookie) {
+                if ($this->cookie_encrypt) {
                     $this->ci->load->library('encrypt');
                     $data = $this->ci->encrypt->decode($cookie);
                 }
@@ -254,7 +265,7 @@ class Auth {
                     $autologin_model = strstr($this->autologin_model, "/") ? end(explode("/", $this->autologin_model)) : $this->autologin_model;
                     
                     /* check for valid key */
-                    if ($this->ci->{$autologin_model}->exists($data['id'], hash($this->hash_algo, $data['key']))) {
+                    if ($this->ci->{$autologin_model}->exists($data['id'], hash($this->hash_algorithm, $data['key']))) {
                         $user = $this->ci->{$this->user_model}->get($data['id']);
                         
                         /* remove password and store user information in session */
@@ -264,16 +275,16 @@ class Auth {
                         /* refresh key */
                         $new_key = $this->generate_key();
                         
-                        if ($this->ci->{$autologin_model}->update($data['id'], hash($this->hash_algo, $data['key']), hash($this->hash_algo, $new_key))) {
+                        if ($this->ci->{$autologin_model}->update($data['id'], hash($this->hash_algorithm, $data['key']), hash($this->hash_algorithm, $new_key))) {
                             $data = serialize(array('id' => $data['id'], 'key' => $new_key));
                             
                             /* encrypt cookie */
-                            if ($this->encrypt_cookie) {
+                            if ($this->cookie_encrypt) {
                                 $this->ci->load->library('encrypt');
                                 $data = $this->ci->encrypt->encode($data);
                             }
                             
-                            $this->ci->input->set_cookie(array('name' => $this->cookie_name, 'value' => $data, 'expire' => $this->expiration));
+                            $this->ci->input->set_cookie(array('name' => $this->cookie_name, 'value' => $data, 'expire' => $this->cookie_expire));
                         }
                         
                         return TRUE;
@@ -290,7 +301,7 @@ class Auth {
      * @return string
      */
     private function generate_key() {
-        return hash($this->hash_algo, uniqid(rand() . $this->ci->config->item('encryption_key')));
+        return hash($this->hash_algorithm, uniqid(rand() . $this->ci->config->item('encryption_key')));
     }
     
     /**

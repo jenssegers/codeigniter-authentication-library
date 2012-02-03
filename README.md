@@ -8,35 +8,49 @@ Installation
 
 Place the files from the repository in their respective folders. A database.sql file is included containing the required database structure.
 
-
 Configuration
 -------------
 
-In your config.php add the following configuration parameters (optional):
+Edit the auth.php configuration file to fit your specific environment:
 
     /*
-	|--------------------------------------------------------------------------
-	| Autologin
-	|--------------------------------------------------------------------------
+	| -------------------------------------------------------------------
+	| Authentication configuration
+	| -------------------------------------------------------------------
+	| The basic settings for the auth library.
 	|
-	| 'autologin_cookie_name'    = the name you want for the cookie
-	| 'autologin_expiration'     = the number of SECONDS you want the session to last
-	| 'autologin_encrypt_cookie' = encrypt cookie with encryption_key
-	| 'autologin_hash_algo'      = the hashing algorithm used for autologin keys
-	| 'autologin_identification' = the user field that is used to identify the user
-	|
+	| 'cookie_name'	   = the name you want for the cookie
+	| 'cookie_expire'  = the number of SECONDS you want the cookie to last
+	| 'cookie_encrypt' = encrypt cookie with encryption_key
+	| 'hash_algorithm' = the hashing algorithm used for autologin keys
+	| 'identification' = the database field that is used to identify the user
 	*/
-	$config['autologin_cookie_name']    = "autologin";
-	$config['autologin_expiration']     = 31536000; // 1 year
-	$config['autologin_encrypt_cookie'] = TRUE;
-	$config['autologin_hash_algo']      = "sha256";
-	$config['autologin_identification'] = "email";
+
+	$config['cookie_name']    = 'autologin';
+	$config['cookie_expire']  = 31536000;
+	$config['cookie_encrypt'] = TRUE;
+	$config['hash_algorithm'] = 'sha256';
+	$config['identification'] = 'username';
+
+	/*
+	| -------------------------------------------------------------------
+	| Model options
+	| -------------------------------------------------------------------
+	| If you use a custom model and or a different database structure, 
+	| adjust these values so that the library uses the correct methods.
+	|
+	| 'primary_key'	= the primary key of your users database table
+	| 'user_model'	= the name of your user model
+	| 'autologin_model' = the name of the autologin model
+	*/
+
+	$config['primary_key'] = 'id';
+	$config['user_model']  = 'user_model';
+	$config['autologin_model'] = 'autologin_model';
 
 If you prefer, you can autoload the library by adjusting your autoload.php file and add 'auth' to the $autoload['libraries'] array.
 
 The identification field is the user database field you use to identify your users, this will also be the name of the form variable. If you want to identify your users using an email adress, change this field to 'email' (as well as your form field).
-
-This library will detect if you have enabled sess_encrypt_cookie and will encrypt the autologin cookie if you did not specify autologin_encrypt. Encrypting obscures the cookie for extra protection.
 	
 Usage
 -----
