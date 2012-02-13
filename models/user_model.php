@@ -2,7 +2,8 @@
 defined('BASEPATH') or exit('No direct script access allowed');
 
 /**
- * This is an example user model, edit to match your implementation
+ * This is an EXAMPLE user model, edit to match your implementation
+ * OR use the adapter model for easy integration with an existing model
  */
 class User_model extends CI_Model {
     
@@ -50,21 +51,33 @@ class User_model extends CI_Model {
     /**
      * Delete a user
      * 
-     * @param int key
+     * @param string where
+     * @param int value
      * @param string identification field
      */
-    public function delete($key, $where = 'id') {
-        $this->db->where($where, $key)->delete($this->table);
+    public function delete($where, $value = FALSE) {
+        if (!$value) {
+            $value = $where;
+            $where = 'id';
+        }
+        
+        $this->db->where($where, $value)->delete($this->table);
     }
     
     /**
      * Retrieve a user
      * 
-     * @param int key
+     * @param string where
+     * @param int value
      * @param string identification field
      */
-    public function get($key, $where = 'id') {
-        $user = $this->db->where($where, $key)->get($this->table)->row_array();
+    public function get($where, $value = FALSE) {
+        if (!$value) {
+            $value = $where;
+            $where = 'id';
+        }
+        
+        $user = $this->db->where($where, $value)->get($this->table)->row_array();
         return $user;
     }
     
@@ -86,12 +99,18 @@ class User_model extends CI_Model {
     /**
      * Check if a user exists
      * 
-     * @param int key
+     * @param string where
+     * @param int value
      * @param string identification field
      */
     
-    public function exists($key, $where = 'id') {
-        return $this->db->where($where, $key)->get($this->table)->num_rows();
+    public function exists($where, $value = FALSE) {
+        if (!$value) {
+            $value = $where;
+            $where = 'id';
+        }
+        
+        return $this->db->where($where, $value)->count_all_results($this->table);
     }
     
     /**

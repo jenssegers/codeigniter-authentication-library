@@ -26,7 +26,7 @@ $config['identification'] = 'username';
 | adjust these values so that the library uses the correct methods.
 |
 | 'primary_key'	= the primary key of your users database table
-| 'user_model'	= the name of your user model
+| 'user_model'	= the name of your user model (user_adapter for adapter)
 | 'autologin_model' = the name of the autologin model
 */
 

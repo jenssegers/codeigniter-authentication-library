@@ -1,4 +1,4 @@
-Codeigniter secure authentication library
+Codeigniter Secure Authentication Library
 =========================================
 
 This is a secure authentication library for codeigniter.
@@ -40,7 +40,7 @@ Edit the auth.php configuration file to fit your specific environment:
 	| adjust these values so that the library uses the correct methods.
 	|
 	| 'primary_key'	= the primary key of your users database table
-	| 'user_model'	= the name of your user model
+	| 'user_model'	= the name of your user model (user_adapter for adapter)
 	| 'autologin_model' = the name of the autologin model
 	*/
 
@@ -55,7 +55,7 @@ The identification field is the user database field you use to identify your use
 Usage
 -----
 
-A simple implementation example of this library is included, so be sure to check out the example. These are the available methods:
+A simple implementation example of this library is included, so be sure to check out the demo folder. These are the available methods:
 
     $this->auth->login($identification, $password, $remember)
 authenticate a user using their credentials and choose whether or not to create an autologin cookie
@@ -86,6 +86,9 @@ Model communication
 This library does not serve as a model for your user database. This library is developed in such a way that it can be coupled to whatever user model you are using. Many other authentication act as a model (or a facade). This is not what I wanted for this library, because libraries should be exchangeable between projects.
 
 The library only uses the get($id) method of the included example model to retrieve a specific user's information. Feel free to change the model name and methods to adjust the library to your environment.
+
+### NEW! ####
+If you already have a complete user model, you can use the adapter model class that is provided, this will serve as a wrapper for your existing model. Make sure you edit the adapter's only function to work correctly with your model.
 
 Controller example
 ------------------

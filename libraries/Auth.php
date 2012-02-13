@@ -30,20 +30,24 @@ if (!defined("BASEPATH"))
 class Auth {
     
     /* basic settings default values */
-    private $cookie_name    = "autologin";
-    private $cookie_expire  = 8640000;
+    private $cookie_name = "autologin";
+    private $cookie_expire = 8640000;
     private $cookie_encrypt = TRUE;
     private $hash_algorithm = "sha256";
     private $identification = "username";
     
     /* model options default values */
     private $primary_key = "id";
-    private $user_model  = "user_model";
+    private $user_model = "user_model"; // or user_adapter
     private $autologin_model = "autologin_model";
     
     private $ci;
     public $error = FALSE;
     
+    /**
+     * Constructor, loads dependencies, initializes the library
+     * and detects an autologin cookie
+     */
     public function __construct($config = array()) {
         $this->ci = &get_instance();
         
@@ -72,6 +76,7 @@ class Auth {
     
     /**
      * Initialize with configuration array
+     * 
      * @param array $config
      */
     public function initialize($config = array()) {
@@ -82,10 +87,28 @@ class Auth {
     
     /**
      * Easy access to the current user's information
-     * This enables functions like username() and email()
+     * This enables properties like username and email
+     * 
+     * @param string $name
+     * @return mixed
+     */
+    public function __get($name) {
+        if ($this->loggedin()) {
+            $user = $this->ci->session->userdata('user');
+            if (isset($user[$name])) {
+                return $user[$name];
+            }
+        }
+        return FALSE;
+    }
+    
+	/**
+     * Easy access to the current user's information
+     * This enables properties like username() and email()
+     * 
      * @param string $name
      * @param array $arguments
-     * @return unknown
+     * @return mixed
      */
     public function __call($name, $arguments) {
         if ($this->loggedin()) {
@@ -100,13 +123,14 @@ class Auth {
     /**
      * Authenticate a user using their credentials and choose whether or not to create an autologin cookie
      * Returns TRUE if login is successful, false otherwise
+     * 
      * @param string $identification
      * @param string $password
      * @param boolean $remember
      * @return boolean
      */
     public function login($identification, $password, $remember = FALSE) {
-        $user = $this->ci->{$this->user_model}->get($identification, $this->identification);
+        $user = $this->ci->{$this->user_model}->get($this->identification, $identification);
         
         if ($user) {
             if ($user["activated"]) {
@@ -145,6 +169,7 @@ class Auth {
     
     /**
      * Check if the current user is logged in or not
+     * 
      * @return boolean
      */
     public function loggedin() {
@@ -153,6 +178,7 @@ class Auth {
     
     /**
      * Returns the user id of the current user if logged in
+     * 
      * @return int
      */
     public function userid() {
@@ -162,6 +188,7 @@ class Auth {
     
     /**
      * Returns the identification field of the current user if logged in
+     * 
      * @return int
      */
     public function identification() {
@@ -171,6 +198,7 @@ class Auth {
     
     /**
      * Creates the hash for a given password, use this method in your user model
+     * 
      * @param string $password
      */
     public function hash($password) {
@@ -178,7 +206,8 @@ class Auth {
     }
     
     /**
-     * Contains an error message when the login has failed
+     * Contains an error message when the authentication has failed
+     * 
      * @return string
      */
     public function error() {
@@ -187,6 +216,7 @@ class Auth {
     
     /**
      * Generate a new autologin token and create the autologin cookie, given a user's id
+     * 
      * @param int $id
      * @return boolean
      */
@@ -246,6 +276,7 @@ class Auth {
     
     /**
      * Detects the autologin cookie and logs in the user if the token is valid
+     * 
      * @return boolean
      */
     private function autologin() {
@@ -298,6 +329,7 @@ class Auth {
     
     /**
      * Generate random autologin tokens
+     * 
      * @return string
      */
     private function generate_key() {
@@ -306,6 +338,7 @@ class Auth {
     
     /**
      * Checks the given password with the correct hash (using phpass)
+     * 
      * @param string $password
      * @param string $hash
      * @return boolean
