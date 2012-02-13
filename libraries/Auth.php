@@ -55,15 +55,15 @@ class Auth {
         $this->ci->load->library('session');
         $this->ci->load->library('PasswordHash', array("iteration_count_log2" => 8, "portable_hashes" => FALSE));
         
-        /* HVMC support */
-        $this->ci->load->model($this->user_model);
-        if (strstr($this->user_model, '/')) {
-            $this->user_model = end(explode('/', $this->user_model));
-        }
-        
         /* initialize from config */
         if (!empty($config)) {
             $this->initialize($config);
+        }
+        
+    	/* HVMC support */
+        $this->ci->load->model($this->user_model);
+        if (strstr($this->user_model, '/')) {
+            $this->user_model = end(explode('/', $this->user_model));
         }
         
         log_message('debug', 'Authentication library initialized');
@@ -297,7 +297,7 @@ class Auth {
                     
                     /* check for valid key */
                     if ($this->ci->{$autologin_model}->exists($data['id'], hash($this->hash_algorithm, $data['key']))) {
-                        $user = $this->ci->{$this->user_model}->get($data['id']);
+                        $user = $this->ci->{$this->user_model}->get($this->primary_key, $data['id']);
                         
                         /* remove password and store user information in session */
                         unset($user["password"]);

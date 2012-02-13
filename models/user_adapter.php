@@ -1,6 +1,10 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+// Let CodeIgniter load the parent class
+$ci = &get_instance();
+$ci->load->model("user_model"); // EDIT THIS!
+
 /**
  * Make sure this adapter extends your own user model!
  */
