@@ -1,4 +1,4 @@
-Codeigniter Secure Authentication Library
+CodeIgniter Secure Authentication Library
 =========================================
 
 This is a secure authentication library for codeigniter.
