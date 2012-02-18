@@ -60,7 +60,7 @@ class Auth {
             $this->initialize($config);
         }
         
-    	/* HVMC support */
+        /* HVMC support */
         $this->ci->load->model($this->user_model);
         if (strstr($this->user_model, '/')) {
             $this->user_model = end(explode('/', $this->user_model));

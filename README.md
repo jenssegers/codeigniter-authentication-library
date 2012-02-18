@@ -6,7 +6,7 @@ This is a secure authentication library for codeigniter.
 Installation
 ------------
 
-Place the files from the repository in their respective folders. A database.sql file is included containing the required database structure.
+Place the files from the repository in their respective folders. A database.sql file is included containing the required database structure (or use spark).
 
 Configuration
 -------------
