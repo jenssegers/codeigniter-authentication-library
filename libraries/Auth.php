@@ -102,7 +102,7 @@ class Auth {
         return FALSE;
     }
     
-	/**
+    /**
      * Easy access to the current user's information
      * This enables properties like username() and email()
      * 
@@ -226,6 +226,9 @@ class Auth {
         /* HVMC support */
         $this->ci->load->model($this->autologin_model);
         $autologin_model = strstr($this->autologin_model, "/") ? end(explode("/", $this->autologin_model)) : $this->autologin_model;
+        
+        /* remove all expired keys */
+        $this->ci->{$autologin_model}->clean();
         
         /* clean old keys on this ip */
         $this->ci->{$autologin_model}->purge($id);
