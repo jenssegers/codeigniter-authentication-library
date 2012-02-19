@@ -228,7 +228,7 @@ class Auth {
         $autologin_model = strstr($this->autologin_model, "/") ? end(explode("/", $this->autologin_model)) : $this->autologin_model;
         
         /* remove all expired keys */
-        $this->ci->{$autologin_model}->clean();
+        $this->ci->{$autologin_model}->clean(time() - $this->cookie_expire);
         
         /* clean old keys on this ip */
         $this->ci->{$autologin_model}->purge($id);
