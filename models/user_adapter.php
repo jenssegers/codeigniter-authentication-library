@@ -1,34 +1,50 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-// The name of your original model, EDIT THIS!
-$model = "user_model";
-
-// Load the original model if not loaded yet
-if(!class_exists($model)) {
-    $ci = &get_instance();
-    $ci->load->model($model);
-}
-
-/**
- * Make sure this adapter extends your own user model!
- */
-class User_adapter extends User_model {
+class User_adapter extends Model_adapter {
+    
+    // The name of the original model, EDIT THIS!
+    protected $model = "user_model";
     
     /**
-     * Return the complete user array with this id
-     * This method is a wrapper an existing method in your own model,
-     * adjust this method to use it correctly!
+     * THIS IS A WRAPPER METHOD FOR AN EXISTING METHOD IN YOUR ORIGINAL MODEL
+     * Return the complete user array matching these parameters
      * 
-	 * @param string where
+     * @param string where
      * @param int value
      * @return array $user
      */
     public function get($where, $value) {
-        /* EDIT THIS! */
-        $user = parent::get($where, $value);
-        
-        return $user;
+        /* EDIT THIS: */
+        return parent::get_where($where, $value);
+    }
+
+}
+
+/**
+ * A model adapter class that will pass all calls made to the original model
+ * DO NOT EDIT THIS CLASS!
+ */
+class Model_adapter extends CI_Model {
+    
+    protected $model = 'user_model';
+    
+    function __construct() {
+        parent::__construct();
+        if (!class_exists($this->model)) {
+            $ci = &get_instance();
+            $ci->load->model($this->model);
+        }
+    }
+    
+    function __get($name) {
+        $ci = &get_instance();
+        return $ci->{$this->model}->{$name};
+    }
+    
+    function __call($method, $args) {
+        $ci = &get_instance();
+        return call_user_func_array(array($ci->{$this->model}, $method), $args);
     }
 
 }
