@@ -94,10 +94,13 @@ class Auth {
      */
     public function __get($name) {
         if ($this->loggedin()) {
-            if ($name == 'user') {         
-                return (object) $this->ci->session->userdata('user');
+            $user = (object) $this->ci->session->userdata('user');
+            if ($name == 'user') {
+                return $user;
+            } elseif (isset($user->{$name})) {
+                return $user->{$name};
             } else {
-                return $this->user->{$name};
+                return FALSE;
             }
         }
     }
