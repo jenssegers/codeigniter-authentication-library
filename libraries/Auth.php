@@ -31,7 +31,7 @@ class Auth {
     
     /* basic settings default values */
     private $cookie_name = "autologin";
-    private $cookie_expire = 8640000;
+    private $cookie_expire = 5184000;
     private $cookie_encrypt = TRUE;
     private $hash_algorithm = "sha256";
     private $identification = "username";

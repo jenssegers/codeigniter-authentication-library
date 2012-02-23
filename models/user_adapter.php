@@ -1,9 +1,14 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-// Let CodeIgniter load the parent class
-$ci = &get_instance();
-$ci->load->model("user_model"); // EDIT THIS!
+// The name of your original model, EDIT THIS!
+$model = "user_model";
+
+// Load the original model if not loaded yet
+if(!class_exists($model)) {
+    $ci = &get_instance();
+    $ci->load->model($model);
+}
 
 /**
  * Make sure this adapter extends your own user model!

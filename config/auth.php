@@ -13,7 +13,7 @@
 */
 
 $config['cookie_name']    = 'autologin';
-$config['cookie_expire']  = 31536000;
+$config['cookie_expire']  = 5184000; // 60 days (renewed when used)
 $config['cookie_encrypt'] = TRUE;
 $config['hash_algorithm'] = 'sha256';
 $config['identification'] = 'username';
