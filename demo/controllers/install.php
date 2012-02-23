@@ -9,6 +9,7 @@ class Install extends CI_Controller {
      * to the database, please remove this controller afterwards.
      */
     public function index() {
+        // load the model
         $this->load->model("user_model");
         
         /* EDIT THESE FIELDS */

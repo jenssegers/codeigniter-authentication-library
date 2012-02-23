@@ -20,14 +20,15 @@ Edit the auth.php configuration file to fit your specific environment:
 	| The basic settings for the auth library.
 	|
 	| 'cookie_name'	   = the name you want for the cookie
-	| 'cookie_expire'  = the number of SECONDS you want the cookie to last
+	| 'cookie_expire'  = the number of SECONDS you want the cookie to last,
+	|                    when a cookie is used, this time is reset
 	| 'cookie_encrypt' = encrypt cookie with encryption_key
 	| 'hash_algorithm' = the hashing algorithm used for autologin keys
 	| 'identification' = the database field that is used to identify the user
 	*/
 
 	$config['cookie_name']    = 'autologin';
-	$config['cookie_expire']  = 31536000;
+	$config['cookie_expire']  = 5184000; // 60 days
 	$config['cookie_encrypt'] = TRUE;
 	$config['hash_algorithm'] = 'sha256';
 	$config['identification'] = 'username';
@@ -69,11 +70,14 @@ returns whether the user is logged in or not, TRUE/FALSE
     $this->auth->userid()
 returns the current user's id
 
-    $this->auth->username() # or how your column is called
+    $this->auth->username # or how your column is called
 returns the current user's username
 
-    $this->auth->email() # or how your column is called
+    $this->auth->email # or how your column is called
 returns the current user's email
+
+	$this->auth->user
+returns the complete user object that is storred
 
     $this->auth->hash($password)
 returns the hashed password to store in the database (to use in your model)
@@ -95,18 +99,18 @@ Controller example
 
 	if($this->auth->loggedin()) {
 		$id  = $this->auth->userid():
-		$username = $this->auth->username();
+		$username = $this->auth->username;
 	
-		/* user is already logged in */
+		// user is already logged in
 		redirect("admin");
 	}
 		 
-	if($this->auth->login($this->input->post("username"), $this->input->post("password"), TRUE)) {
-		/* credentials are correct */
+	if ($this->auth->login($this->input->post("username"), $this->input->post("password"), TRUE)) {
+		// credentials are correct
 		redirect("admin");
 	}
 	else {
-		/* login failed, show form with errors */
+		// login failed, show form with errors
 		$error = $this->auth->error;
 		 
 		switch($error) {
@@ -123,5 +127,5 @@ Controller example
 				$error = "Login error";
 		}
 		 
-		$this->load->view("login", array("error"=>$error));
+		$this->load->view("login", array("error" => $error));
 	}

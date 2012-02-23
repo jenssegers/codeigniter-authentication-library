@@ -29,46 +29,44 @@ if (!defined("BASEPATH"))
 
 class Auth {
     
-    /* basic settings default values */
-    private $cookie_name = "autologin";
+    // basic settings default values
+    private $cookie_name = 'autologin';
     private $cookie_expire = 5184000;
     private $cookie_encrypt = TRUE;
-    private $hash_algorithm = "sha256";
-    private $identification = "username";
+    private $hash_algorithm = 'sha256';
+    private $identification = 'username';
     
-    /* model options default values */
-    private $primary_key = "id";
-    private $user_model = "user_model"; // or user_adapter
-    private $autologin_model = "autologin_model";
+    // model options default values
+    private $primary_key = 'id';
+    private $user_model = 'user_model'; // or user_adapter
+    private $autologin_model = 'autologin_model';
     
     private $ci;
     public $error = FALSE;
     
     /**
      * Constructor, loads dependencies, initializes the library
-     * and detects an autologin cookie
+     * and detects the autologin cookie
      */
     public function __construct($config = array()) {
         $this->ci = &get_instance();
         
-        /* load required libraries and models */
+        // load required libraries and models
         $this->ci->load->library('session');
-        $this->ci->load->library('PasswordHash', array("iteration_count_log2" => 8, "portable_hashes" => FALSE));
+        $this->ci->load->library('PasswordHash', array('iteration_count_log2' => 8, 'portable_hashes' => FALSE));
         
-        /* initialize from config */
+        // initialize from config
         if (!empty($config)) {
             $this->initialize($config);
         }
         
-        /* HVMC support */
+        // HVMC support
         $this->ci->load->model($this->user_model);
-        if (strstr($this->user_model, '/')) {
-            $this->user_model = end(explode('/', $this->user_model));
-        }
+        $this->user_model = strstr($this->user_model, '/') ? end(explode('/', $this->user_model)) : $this->user_model;
         
         log_message('debug', 'Authentication library initialized');
         
-        /* detect autologin */
+        // detect autologin
         if (!$this->ci->session->userdata('loggedin')) {
             $this->autologin();
         }
@@ -86,43 +84,27 @@ class Auth {
     }
     
     /**
-     * Easy access to the current user's information
-     * This enables properties like username and email
+     * Allows easy access to the current user's information by accessing
+     * the $this->user object
+     * 
+     * Also allows access to $this->loggedin instead of $this->loggedin()
      * 
      * @param string $name
      * @return mixed
      */
     public function __get($name) {
         if ($this->loggedin()) {
-            $user = $this->ci->session->userdata('user');
-            if (isset($user[$name])) {
-                return $user[$name];
+            if ($name == 'user') {         
+                return (object) $this->ci->session->userdata('user');
+            } else {
+                return $this->user->{$name};
             }
         }
-        return FALSE;
     }
     
     /**
-     * Easy access to the current user's information
-     * This enables properties like username() and email()
-     * 
-     * @param string $name
-     * @param array $arguments
-     * @return mixed
-     */
-    public function __call($name, $arguments) {
-        if ($this->loggedin()) {
-            $user = $this->ci->session->userdata('user');
-            if (isset($user[$name])) {
-                return $user[$name];
-            }
-        }
-        return FALSE;
-    }
-    
-    /**
-     * Authenticate a user using their credentials and choose whether or not to create an autologin cookie
-     * Returns TRUE if login is successful, false otherwise
+     * Authenticate a user using their credentials and choose whether or not 
+     * to create an autologin cookie. Returns TRUE if login is successful
      * 
      * @param string $identification
      * @param string $password
@@ -133,10 +115,13 @@ class Auth {
         $user = $this->ci->{$this->user_model}->get($this->identification, $identification);
         
         if ($user) {
-            if ($user["activated"]) {
+            // we need $user to be an array to store in our session
+            $user = $this->to_array($user);
+            
+            if (isset($user['activated']) && $user['activated']) {
                 if ($this->check_pass($password, $user['password'])) {
-                    /* remove password and store user information in session */
-                    unset($user["password"]);
+                    // remove password and store user information in session
+                    unset($user['password']);
                     $this->ci->session->set_userdata(array('user' => $user, 'loggedin' => TRUE));
                     
                     if ($remember) {
@@ -145,13 +130,13 @@ class Auth {
                     
                     return TRUE;
                 } else {
-                    $this->error = "wrong_password";
+                    $this->error = 'wrong_password';
                 }
             } else {
-                $this->error = "not_activated";
+                $this->error = 'not_activated';
             }
         } else {
-            $this->error = "not_found";
+            $this->error = 'not_found';
         }
         
         return FALSE;
@@ -161,8 +146,8 @@ class Auth {
      * Logout the current user, destroys the current session and autologin key
      */
     public function logout() {
-        $this->ci->session->sess_destroy();
         $this->delete_autologin();
+        $this->ci->session->sess_destroy();
         $this->ci->session->set_userdata('loggedin', FALSE);
         $this->ci->session->set_userdata('user', FALSE);
     }
@@ -182,8 +167,7 @@ class Auth {
      * @return int
      */
     public function userid() {
-        $user = $this->ci->session->userdata('user');
-        return $user[$this->primary_key];
+        return $this->user->{$this->primary_key};
     }
     
     /**
@@ -192,8 +176,7 @@ class Auth {
      * @return int
      */
     public function identification() {
-        $user = $this->ci->session->userdata('user');
-        return $user[$this->identification];
+        return $this->user->{$this->identification};
     }
     
     /**
@@ -221,28 +204,23 @@ class Auth {
      * @return boolean
      */
     private function create_autologin($id) {
+        // generate key
         $key = $this->generate_key();
         
-        /* HVMC support */
+        // HVMC support
         $this->ci->load->model($this->autologin_model);
-        $autologin_model = strstr($this->autologin_model, "/") ? end(explode("/", $this->autologin_model)) : $this->autologin_model;
+        $autologin_model = strstr($this->autologin_model, '/') ? end(explode('/', $this->autologin_model)) : $this->autologin_model;
         
-        /* remove all expired keys */
+        // remove all expired keys
         $this->ci->{$autologin_model}->clean(time() - $this->cookie_expire);
         
-        /* clean old keys on this ip */
+        // clean old keys on this ip
         $this->ci->{$autologin_model}->purge($id);
         
+        // store key and write to autologin cookie
         if ($this->ci->{$autologin_model}->insert($id, hash($this->hash_algorithm, $key))) {
-            $data = serialize(array('id' => $id, 'key' => $key));
-            
-            /* encrypt cookie */
-            if ($this->cookie_encrypt) {
-                $this->ci->load->library('encrypt');
-                $data = $this->ci->encrypt->encode($data);
-            }
-            
-            $this->ci->input->set_cookie(array('name' => $this->cookie_name, 'value' => $data, 'expire' => $this->cookie_expire));
+            $data = array('id' => $id, 'key' => $key);
+            $this->write_cookie($data);
             
             return TRUE;
         }
@@ -254,26 +232,18 @@ class Auth {
      * Disable the current autologin token and remove the cookie
      */
     private function delete_autologin() {
-        if ($cookie = $this->ci->input->cookie($this->cookie_name, TRUE)) {
-            /* decrypt cookie */
-            if ($this->cookie_encrypt) {
-                $this->ci->load->library('encrypt');
-                $data = $this->ci->encrypt->decode($cookie);
-            }
-            
-            $data = @unserialize($data);
-            
+        if ($data = $this->read_cookie()) {
             if (isset($data['id']) and isset($data['key'])) {
-                /* HVMC support */
+                // HVMC support
                 $this->ci->load->model($this->autologin_model);
-                $autologin_model = strstr($this->autologin_model, "/") ? end(explode("/", $this->autologin_model)) : $this->autologin_model;
+                $autologin_model = strstr($this->autologin_model, '/') ? end(explode('/', $this->autologin_model)) : $this->autologin_model;
                 
-                /* delete the key */
+                // delete the key
                 $this->ci->{$autologin_model}->delete($data['id'], hash($this->hash_algorithm, $data['key']));
             }
             
-            /* delete cookie */
-            $this->ci->input->set_cookie(array('name' => $this->ci->config->item('autologin_cookie_name'), 'value' => "", 'expire' => ""));
+            // delete cookie
+            $this->ci->input->set_cookie(array('name' => $this->cookie_name, 'value' => '', 'expire' => ''));
         }
     }
     
@@ -284,50 +254,79 @@ class Auth {
      */
     private function autologin() {
         if (!$this->loggedin()) {
-            if ($cookie = $this->ci->input->cookie($this->cookie_name, TRUE)) {
-                /* decrypt cookie */
-                if ($this->cookie_encrypt) {
-                    $this->ci->load->library('encrypt');
-                    $data = $this->ci->encrypt->decode($cookie);
-                }
-                
-                $data = @unserialize($data);
-                
+            if ($data = $this->read_cookie()) {
                 if (isset($data['id']) and isset($data['key'])) {
-                    /* HVMC support */
+                    // HVMC support
                     $this->ci->load->model($this->autologin_model);
-                    $autologin_model = strstr($this->autologin_model, "/") ? end(explode("/", $this->autologin_model)) : $this->autologin_model;
+                    $autologin_model = strstr($this->autologin_model, '/') ? end(explode('/', $this->autologin_model)) : $this->autologin_model;
                     
-                    /* check for valid key */
+                    // check for valid key
                     if ($this->ci->{$autologin_model}->exists($data['id'], hash($this->hash_algorithm, $data['key']))) {
                         $user = $this->ci->{$this->user_model}->get($this->primary_key, $data['id']);
                         
-                        /* remove password and store user information in session */
-                        unset($user["password"]);
-                        $this->ci->session->set_userdata(array('user' => $user, 'loggedin' => TRUE));
-                        
-                        /* refresh key */
-                        $new_key = $this->generate_key();
-                        
-                        if ($this->ci->{$autologin_model}->update($data['id'], hash($this->hash_algorithm, $data['key']), hash($this->hash_algorithm, $new_key))) {
-                            $data = serialize(array('id' => $data['id'], 'key' => $new_key));
+                        if ($user) {
+                            // we need $user to be an array to store in our session
+                            $user = $this->to_array($user);
                             
-                            /* encrypt cookie */
-                            if ($this->cookie_encrypt) {
-                                $this->ci->load->library('encrypt');
-                                $data = $this->ci->encrypt->encode($data);
+                            // remove password and store user information in session
+                            unset($user->password);
+                            $this->ci->session->set_userdata(array('user' => serialize($user), 'loggedin' => TRUE));
+                            
+                            // generate new key
+                            $new_key = $this->generate_key();
+                            
+                            // store new key and write to cookie
+                            if ($this->ci->{$autologin_model}->update($data['id'], hash($this->hash_algorithm, $data['key']), hash($this->hash_algorithm, $new_key))) {
+                                $data = array('id' => $data['id'], 'key' => $new_key);
+                                $this->write_cookie($data);
                             }
                             
-                            $this->ci->input->set_cookie(array('name' => $this->cookie_name, 'value' => $data, 'expire' => $this->cookie_expire));
+                            return TRUE;
                         }
-                        
-                        return TRUE;
                     }
                 }
             }
         }
         
         return FALSE;
+    }
+    
+    /**
+     * Write data to autologin cookie
+     * 
+     * @param array $data
+     */
+    private function write_cookie($data = array()) {
+        $data = serialize($data);
+        
+        // encrypt cookie
+        if ($this->cookie_encrypt) {
+            $this->ci->load->library('encrypt');
+            $data = $this->ci->encrypt->encode($data);
+        }
+        
+        return $this->ci->input->set_cookie(array('name' => $this->cookie_name, 'value' => $data, 'expire' => $this->cookie_expire));
+    }
+    
+    /**
+     * Read data from autologin cookie
+     * 
+     * @return boolean
+     */
+    private function read_cookie() {
+        $cookie = $this->ci->input->cookie($this->cookie_name, TRUE);
+        
+        if (!$cookie) {
+            return FALSE;
+        }
+        
+        // decrypt cookie
+        if ($this->cookie_encrypt) {
+            $this->ci->load->library('encrypt');
+            $data = $this->ci->encrypt->decode($cookie);
+        }
+        
+        return @unserialize($data);
     }
     
     /**
@@ -348,6 +347,20 @@ class Auth {
      */
     private function check_pass($password, $hash) {
         return $this->ci->passwordhash->CheckPassword($password, $hash);
+    }
+    
+    /**
+     * Convert object to array
+     * 
+     * @param object $object
+     * @return array
+     */
+    private function to_array($object) {
+        $array = array();
+        foreach ($object as $k => $v) {
+            $array[$k] = $v;
+        }
+        return $array;
     }
 
 }
