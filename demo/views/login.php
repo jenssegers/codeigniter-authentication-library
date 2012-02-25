@@ -1,5 +1,5 @@
 <?php if(isset($error)): ?>
-<div class="errors">
+<div style="color: red">
 	<?php echo $error; ?>
 </div>
 <?php endif; ?>

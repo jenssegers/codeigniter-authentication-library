@@ -6,43 +6,40 @@ class Login extends CI_Controller {
     
     public function index() {
         // in case you did not autoload the library
-        $this->load->library("auth");
-
-        $this->load->helper("form");
+        $this->load->library('auth');
         
+        // user is already logged in
         if ($this->auth->loggedin()) {
-            // user is still logged in
-            redirect("admin");
-        } else {
-            // form submitted
-            if ($this->input->post("username") && $this->input->post("password")) {
-                $remember = $this->input->post("remember") ? TRUE : FALSE;
-                
-                if ($this->auth->login($this->input->post("username"), $this->input->post("password"), $remember)) {
-                    // credentials are correct
-                    redirect("admin");
+            redirect('admin');
+        }
+        
+        $error = '';
+        
+        // form submitted
+        if ($this->input->post('username') && $this->input->post('password')) {
+            $remember = $this->input->post('remember') ? TRUE : FALSE;
+            
+            // get user from database
+            $this->load->model('user_model');
+            $user = $this->user_model->get('username', $this->input->post('username'));
+            
+            if ($user) {
+                // compare passwords
+                if ($this->user_model->check_password($this->input->post('password'), $user['password'])) {
+                    // mark user as logged in
+                    $this->auth->login($user['id'], $remember);
+                    redirect('admin');
                 } else {
-                    // login failed, show form with errors
-                    $error = $this->auth->error;
-                    
-                    switch ($error) {
-                        case "not_found" :
-                            $error = "Account not found";
-                            break;
-                        case "not_activated" :
-                            $error = "Account not activated";
-                            break;
-                        case "wrong_password" :
-                            $error = "Wrong password";
-                            break;
-                    }
-                    
-                    $this->load->view("login", array("error" => $error));
+                    $error = "Wrong password";
                 }
             } else {
-                $this->load->view("login");
+                $error = "User does not exist";
             }
         }
+        
+        // show login form
+        $this->load->helper('form');
+        $this->load->view('login', array('error' => $error));
     }
 }
 

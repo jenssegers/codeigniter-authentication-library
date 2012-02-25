@@ -10,14 +10,13 @@ class Install extends CI_Controller {
      */
     public function index() {
         // load the model
-        $this->load->model("user_model");
+        $this->load->model('user_model');
         
         /* EDIT THESE FIELDS */
         $user = array();
-        $user["username"] = "admin";
-        $user["password"] = "pass";
-        $user["email"] = "my@mail.com";
-        $user["activated"] = 1;
+        $user['username'] = 'admin';
+        $user['password'] = 'pass';
+        $user['email'] = 'my@mail.com';
         
         $id = $this->user_model->insert($user);
     }

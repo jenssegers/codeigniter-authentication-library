@@ -3,10 +3,12 @@ CodeIgniter Secure Authentication Library
 
 This is a secure authentication library for codeigniter.
 
+**WARNING**: this is version 2 this library, this is a more simplified and more easy to use version that is easier to implement in existing code. The original library relied too much on correct model communication that has been removed. Most of the functionality has been preserved although some things have been completely moved to the model as you can see in the example folder.
+
 Installation
 ------------
 
-Place the files from the repository in their respective folders. A database.sql file is included containing the required database structure (or use spark).
+Place the files from the repository in their respective folders (or use spark). A database.sql file is included containing the required database structure.
 
 Configuration
 -------------
@@ -19,113 +21,76 @@ Edit the auth.php configuration file to fit your specific environment:
 	| -------------------------------------------------------------------
 	| The basic settings for the auth library.
 	|
-	| 'cookie_name'	   = the name you want for the cookie
-	| 'cookie_expire'  = the number of SECONDS you want the cookie to last,
-	|                    when a cookie is used, this time is reset
-	| 'cookie_encrypt' = encrypt cookie with encryption_key
-	| 'hash_algorithm' = the hashing algorithm used for autologin keys
-	| 'identification' = the database field that is used to identify the user
+	| 'cookie_name'	     = the name you want for the cookie
+	| 'cookie_encrypt'   = encrypt cookie with encryption_key
+	| 'autologin_expire' = time for cookie to expire in seconds (renews when used)
+	| 'autologin_table'  = the name of the autologin table (see .sql file)
+	| 'hash_algorithm'   = the hashing algorithm used for generating keys
 	*/
 
-	$config['cookie_name']    = 'autologin';
-	$config['cookie_expire']  = 5184000; // 60 days
-	$config['cookie_encrypt'] = TRUE;
-	$config['hash_algorithm'] = 'sha256';
-	$config['identification'] = 'username';
-
-	/*
-	| -------------------------------------------------------------------
-	| Model options
-	| -------------------------------------------------------------------
-	| If you use a custom model and or a different database structure, 
-	| adjust these values so that the library uses the correct methods.
-	|
-	| 'primary_key'	= the primary key of your users database table
-	| 'user_model'	= the name of your user model (user_adapter for adapter)
-	| 'autologin_model' = the name of the autologin model
-	*/
-
-	$config['primary_key'] = 'id';
-	$config['user_model']  = 'user_model';
-	$config['autologin_model'] = 'autologin_model';
+	$config['cookie_name']      = 'autologin';
+	$config['cookie_encrypt']   = TRUE;
+	$config['autologin_table']  = 'autologin';
+	$config['autologin_expire'] = 5184000; // 60 days
+	$config['hash_algorithm']   = 'sha256';
 
 If you prefer, you can autoload the library by adjusting your autoload.php file and add 'auth' to the $autoload['libraries'] array.
 
-The identification field is the user database field you use to identify your users, this will also be the name of the form variable. If you want to identify your users using an email adress, change this field to 'email' (as well as your form field).
-	
 Usage
 -----
 
 A simple implementation example of this library is included, so be sure to check out the demo folder. These are the available methods:
 
-    $this->auth->login($identification, $password, $remember)
-authenticate a user using their credentials and choose whether or not to create an autologin cookie
+    $this->auth->login($id, $remember = TRUE)
+Mark the user with this id as logged in, provide an optional remember boolean if you want to create an autologin cookie
 	
     $this->auth->logout()
-logout function, destroys session and autologin keys
+Logout function, this removes the autologin cookie and the active key
 
     $this->auth->loggedin()
-returns whether the user is logged in or not, TRUE/FALSE
+Returns whether the user is logged in or not, TRUE/FALSE
 
     $this->auth->userid()
-returns the current user's id
+Returns the current user's id
 
-    $this->auth->username # or how your column is called
-returns the current user's username
+Details & Security
+------------------
 
-    $this->auth->email # or how your column is called
-returns the current user's email
+This library was inspired by the following articles:
+ - http://www.shinytype.com/php/persistent-login-protocol/
+ - http://jaspan.com/improved_persistent_login_cookie_best_practice
+ 
+When a user logs in with remember me checked, a login cookie is created containing the user's identification and a personal key. Actually 2 keys are created, one for the user's cookie and one to store into the database. A user can only log in if both key pairs are present. 
 
-	$this->auth->user
-returns the complete user object that is storred
+When that user visits the site again and it presents the login cookie, the database version of the key is compared with the key stored in the cookie. If the relation between both keys are correct, the used key pair will be removed and a new key pair is generated for future use.
 
-    $this->auth->hash($password)
-returns the hashed password to store in the database (to use in your model)
-
-If the login would fail, an error message is stored in $this->auth->error.
-
-Model communication
--------------------
-
-This library does not serve as a model for your user database. This library is developed in such a way that it can be coupled to whatever user model you are using. Many other authentication act as a model (or a facade). This is not what I wanted for this library, because libraries should be exchangeable between projects.
-
-The library only uses the get($id) method of the included example model to retrieve a specific user's information. Feel free to change the model name and methods to adjust the library to your environment.
-
-### NEW! ####
-If you already have a complete user model, you can use the adapter model class that is provided, this will serve as a wrapper for your existing model. Make sure you edit the adapter's only function to work correctly with your model.
+If on the other hand, the key pair is invalid, a possible cookie/key theft assumed. The user's active key will then immediately be removed for safety reasons.
 
 Controller example
 ------------------
 
-	if($this->auth->loggedin()) {
-		$id  = $this->auth->userid():
-		$username = $this->auth->username;
-	
-		// user is already logged in
-		redirect("admin");
-	}
-		 
-	if ($this->auth->login($this->input->post("username"), $this->input->post("password"), TRUE)) {
-		// credentials are correct
-		redirect("admin");
-	}
-	else {
-		// login failed, show form with errors
-		$error = $this->auth->error;
-		 
-		switch($error) {
-			case "not_found":
-				$error = "Account not found";
-				break;
-			case "not_activated":
-				$error = "Account not activated";
-				break;
-			case "wrong_password":
+In the demo folder you can find a fully working example of this library. It also includes a basic user model and an extra .sql script to create the users database table.
+
+Here is an example how you _could_ use the library on your login page:
+
+	// form submitted
+	if ($this->input->post('username') && $this->input->post('password')) {
+		$remember = $this->input->post('remember') ? TRUE : FALSE;
+		
+		// get user from database
+		$this->load->model('user_model');
+		$user = $this->user_model->get('username', $this->input->post('username'));
+		
+		if ($user) {
+			// compare passwords
+			if ($this->user_model->check_password($this->input->post('password'), $user['password'])) {
+				// mark user as logged in
+				$this->auth->login($user['id'], $remember);
+				redirect('admin');
+			} else {
 				$error = "Wrong password";
-				break;
-			default:
-				$error = "Login error";
+			}
+		} else {
+			$error = "User does not exist";
 		}
-		 
-		$this->load->view("login", array("error" => $error));
 	}

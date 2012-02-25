@@ -5,32 +5,15 @@
 | -------------------------------------------------------------------
 | The basic settings for the auth library.
 |
-| 'cookie_name'	   = the name you want for the cookie
-| 'cookie_expire'  = the number of SECONDS you want the cookie to last,
-|                    when a cookie is used, this time is reset
-| 'cookie_encrypt' = encrypt cookie with encryption_key
-| 'hash_algorithm' = the hashing algorithm used for autologin keys
-| 'identification' = the database field that is used to identify the user
+| 'cookie_name'	     = the name you want for the cookie
+| 'cookie_encrypt'   = encrypt cookie with encryption_key
+| 'autologin_expire' = time for cookie to expire in seconds (renews when used)
+| 'autologin_table'  = the name of the autologin table (see .sql file)
+| 'hash_algorithm'   = the hashing algorithm used for generating keys
 */
 
-$config['cookie_name']    = 'autologin';
-$config['cookie_expire']  = 5184000; // 60 days
-$config['cookie_encrypt'] = TRUE;
-$config['hash_algorithm'] = 'sha256';
-$config['identification'] = 'username';
-
-/*
-| -------------------------------------------------------------------
-| Model options
-| -------------------------------------------------------------------
-| If you use a custom model and or a different database structure, 
-| adjust these values so that the library uses the correct methods.
-|
-| 'primary_key'	= the primary key of your users database table
-| 'user_model'	= the name of your user model (user_adapter for adapter)
-| 'autologin_model' = the name of the autologin model
-*/
-
-$config['primary_key'] = 'id';
-$config['user_model']  = 'user_model';
-$config['autologin_model'] = 'autologin_model';
+$config['cookie_name']      = 'autologin';
+$config['cookie_encrypt']   = TRUE;
+$config['autologin_table']  = 'autologin';
+$config['autologin_expire'] = 5184000; // 60 days
+$config['hash_algorithm']   = 'sha256';

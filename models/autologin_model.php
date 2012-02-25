@@ -8,66 +8,60 @@ defined('BASEPATH') or exit('No direct script access allowed');
 class Autologin_model extends CI_Model {
     
     // database table name
-    var $table = 'users_autologin';
+    var $table = 'autologin';
+    var $expire = 5184000;
     
     /**
-     * Check if a key is bound to a user
+     * Get the settings from config
      */
-    public function exists($user, $key) {
+    public function __construct() {
+        $this->config->load('auth');
+        $this->table = $this->config->item('autologin_table');
+        $this->expire = $this->config->item('autologin_expire');
+    }
+    
+    /**
+     * Get the private key for a specific user and series
+     */
+    public function get($user, $series) {
         $this->db->where('user', $user);
-        $this->db->where('key', $key);
-        $query = $this->db->get($this->table);
+        $this->db->where('series', $series);
+        $row = $this->db->get($this->table)->row();
         
-        return $query->num_rows();
+        return $row ? $row->key : FALSE;
     }
     
     /**
-     * Update a user's key with a new key
+     * Extend a user's current series with a new key
      */
-    public function update($user, $old_key, $new_key) {
+    public function update($user, $series, $private) {
         $this->db->where('user', $user);
-        $this->db->where('key', $old_key);
+        $this->db->where('series', $series);
         
-        return $this->db->update($this->table, array(
-        	'key' => $new_key,
-        	'used' => time(),
-        	'ip' => $this->input->ip_address()));
+        return $this->db->update($this->table, array('key' => $private, 'created' => time()));
     }
     
     /**
-     * Bind a new key to a user
+     * Start a new serie for a user
      */
-    public function insert($user, $key) {
-        return $this->db->insert($this->table, array(
-        	'user' => $user,
-        	'key' => $key,
-        	'used' => time(),
-        	'ip' => $this->input->ip_address()));
+    public function insert($user, $series, $private) {
+        return $this->db->insert($this->table, array('user' => $user, 'series' => $series, 'key' => $private, 'created' => time()));
     }
     
     /**
-     * Clean all keys older than given timespan
+     * Dlete a user's series
      */
-    public function clean($older_than) {
-        $this->db->where('used <', $older_than)->delete($this->table);
-    }
-    
-    /**
-     * Remove all keys bound to this user's ip address
-     */
-    public function purge($user) {
+    public function delete($user, $series) {
         $this->db->where('user', $user);
-        $this->db->where('ip', $this->input->ip_address());
-        $this->db->delete($this->table);
+        $this->db->where('series', $series);
+        
+        return $this->db->delete($this->table);
     }
     
     /**
-     * Delete a key bound to a user
+     * Remove all expired keys
      */
-    public function delete($user, $key) {
-        $this->db->where('user', $user);
-        $this->db->where('key', $key);
-        $this->db->delete($this->table);
+    public function purge() {
+        $this->db->where('created <', time() - $this->expire)->delete($this->table);
     }
-
 }

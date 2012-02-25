@@ -20,7 +20,7 @@ class User_model extends CI_Model {
         // need the library for hashing the password
         $this->load->library("auth");
         
-        $user['password'] = $this->auth->hash($user['password']);
+        $user['password'] = $this->hash($user['password']);
         $user['registered'] = time();
         
         $this->db->insert($this->table, $user);
@@ -37,8 +37,6 @@ class User_model extends CI_Model {
     public function update($id, $user) {
         // prevent overwriting with a blank password
         if (isset($user['password']) && $user['password']) {
-            // need the library for hashing the password
-            $this->load->library("auth");
             $user['password'] = $this->auth->hash($user['password']);
         } else {
             unset($user['password']);
@@ -90,9 +88,9 @@ class User_model extends CI_Model {
      */
     public function get_list($limit = FALSE, $offset = FALSE) {
         if ($limit) {
-            return $this->db->order_by("name")->limit($limit, $offset)->get($this->table)->result_array();
+            return $this->db->order_by("username")->limit($limit, $offset)->get($this->table)->result_array();
         } else {
-            return $this->db->order_by("name")->get($this->table)->result_array();
+            return $this->db->order_by("username")->get($this->table)->result_array();
         }
     }
     
@@ -114,21 +112,27 @@ class User_model extends CI_Model {
     }
     
     /**
-     * Activate a user
+     * Password hashing function
      * 
-     * @param int id
+     * @param string $password
      */
-    public function activate($id) {
-        return $this->update($id, array('activated' => 1));
+    public function hash($password) {
+        $this->load->library('PasswordHash', array('iteration_count_log2' => 8, 'portable_hashes' => FALSE));
+        
+        // hash password
+        return $this->passwordhash->HashPassword($password);
     }
     
     /**
-     * Deactivate a user
+     * Compare user input password to stored hash
      * 
-     * @param int id
+     * @param string $password
+     * @param string $stored_hash
      */
-    public function deactivate($id) {
-        return $this->update($id, array('activated' => 0));
+    public function check_password($password, $stored_hash) {
+        $this->load->library('PasswordHash', array('iteration_count_log2' => 8, 'portable_hashes' => FALSE));
+        
+        // check password
+        return $this->passwordhash->CheckPassword($password, $stored_hash);
     }
-
 }
