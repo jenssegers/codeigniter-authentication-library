@@ -3,7 +3,7 @@ CodeIgniter Secure Authentication Library
 
 This is a secure authentication library for codeigniter.
 
-**WARNING**: this is version 2 this library, this is a more simplified and more easy to use version that is easier to implement in existing code. The original library relied too much on correct model communication that has been removed. Most of the functionality has been preserved although some things have been completely moved to the model as you can see in the example folder.
+**WARNING**: this is version 2 of this library, a more simplified, easier to use version that is easier to implement in existing code. The original library relied too much on correct model communication that now has been removed. Most of the functionality has been preserved, although some things have been moved to the model as you can see in the example folder.
 
 Installation
 ------------
@@ -57,12 +57,13 @@ Details & Security
 ------------------
 
 This library was inspired by the following articles:
+
  - http://www.shinytype.com/php/persistent-login-protocol/
  - http://jaspan.com/improved_persistent_login_cookie_best_practice
  
-When a user logs in with remember me checked, a login cookie is created containing the user's identification and a personal key. Actually 2 keys are created, one for the user's cookie and one to store into the database. A user can only log in if both key pairs are present. 
+When a user logs in with 'remember me' checked, a login cookie is created containing the user's identification and a personal key. Actually 2 keys are created, one for the user's cookie and one to store into the database. A user can only log in if both key pairs are present. 
 
-When that user visits the site again and it presents the login cookie, the database version of the key is compared with the key stored in the cookie. If the relation between both keys are correct, the used key pair will be removed and a new key pair is generated for future use.
+When that user visits the site again, it presents the login cookie. The database version of the key is compared with the key stored in the cookie. If the relation between both keys is correct, the user is logged in, the used key pair will be removed and a new key pair is generated for future use.
 
 If on the other hand, the key pair is invalid, a possible cookie/key theft assumed. The user's active key will then immediately be removed for safety reasons.
 
