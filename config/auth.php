@@ -1,8 +1,8 @@
 <?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 /*
-| -------------------------------------------------------------------
+|--------------------------------------------------------------------------
 | Authentication configuration
-| -------------------------------------------------------------------
+|--------------------------------------------------------------------------
 | The basic settings for the auth library.
 |
 | 'cookie_name'	     = the name you want for the cookie

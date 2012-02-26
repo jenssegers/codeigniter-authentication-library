@@ -37,7 +37,7 @@ class User_model extends CI_Model {
     public function update($id, $user) {
         // prevent overwriting with a blank password
         if (isset($user['password']) && $user['password']) {
-            $user['password'] = $this->auth->hash($user['password']);
+            $user['password'] = $this->hash($user['password']);
         } else {
             unset($user['password']);
         }

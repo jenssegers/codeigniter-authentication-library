@@ -30,10 +30,10 @@ class Login extends CI_Controller {
                     $this->auth->login($user['id'], $remember);
                     redirect('admin');
                 } else {
-                    $error = "Wrong password";
+                    $error = 'Wrong password';
                 }
             } else {
-                $error = "User does not exist";
+                $error = 'User does not exist';
             }
         }
         

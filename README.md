@@ -16,23 +16,23 @@ Configuration
 Edit the auth.php configuration file to fit your specific environment:
 
     /*
-	| -------------------------------------------------------------------
-	| Authentication configuration
-	| -------------------------------------------------------------------
-	| The basic settings for the auth library.
-	|
-	| 'cookie_name'	     = the name you want for the cookie
-	| 'cookie_encrypt'   = encrypt cookie with encryption_key
-	| 'autologin_expire' = time for cookie to expire in seconds (renews when used)
-	| 'autologin_table'  = the name of the autologin table (see .sql file)
-	| 'hash_algorithm'   = the hashing algorithm used for generating keys
-	*/
+    |--------------------------------------------------------------------------
+    | Authentication configuration
+    |--------------------------------------------------------------------------
+    | The basic settings for the auth library.
+    |
+    | 'cookie_name'         = the name you want for the cookie
+    | 'cookie_encrypt'   = encrypt cookie with encryption_key
+    | 'autologin_expire' = time for cookie to expire in seconds (renews when used)
+    | 'autologin_table'  = the name of the autologin table (see .sql file)
+    | 'hash_algorithm'   = the hashing algorithm used for generating keys
+    */
 
-	$config['cookie_name']      = 'autologin';
-	$config['cookie_encrypt']   = TRUE;
-	$config['autologin_table']  = 'autologin';
-	$config['autologin_expire'] = 5184000; // 60 days
-	$config['hash_algorithm']   = 'sha256';
+    $config['cookie_name']      = 'autologin';
+    $config['cookie_encrypt']   = TRUE;
+    $config['autologin_table']  = 'autologin';
+    $config['autologin_expire'] = 5184000; // 60 days
+    $config['hash_algorithm']   = 'sha256';
 
 If you prefer, you can autoload the library by adjusting your autoload.php file and add 'auth' to the $autoload['libraries'] array.
 
@@ -43,7 +43,7 @@ A simple implementation example of this library is included, so be sure to check
 
     $this->auth->login($id, $remember = TRUE)
 Mark the user with this id as logged in, provide an optional remember boolean if you want to create an autologin cookie
-	
+    
     $this->auth->logout()
 Logout function, this removes the autologin cookie and the active key
 
@@ -74,24 +74,24 @@ In the demo folder you can find a fully working example of this library. It also
 
 Here is an example how you _could_ use the library on your login page:
 
-	// form submitted
-	if ($this->input->post('username') && $this->input->post('password')) {
-		$remember = $this->input->post('remember') ? TRUE : FALSE;
-		
-		// get user from database
-		$this->load->model('user_model');
-		$user = $this->user_model->get('username', $this->input->post('username'));
-		
-		if ($user) {
-			// compare passwords
-			if ($this->user_model->check_password($this->input->post('password'), $user['password'])) {
-				// mark user as logged in
-				$this->auth->login($user['id'], $remember);
-				redirect('admin');
-			} else {
-				$error = "Wrong password";
-			}
-		} else {
-			$error = "User does not exist";
-		}
-	}
+    // form submitted
+    if ($this->input->post('username') && $this->input->post('password')) {
+        $remember = $this->input->post('remember') ? TRUE : FALSE;
+        
+        // get user from database
+        $this->load->model('user_model');
+        $user = $this->user_model->get('username', $this->input->post('username'));
+        
+        if ($user) {
+            // compare passwords
+            if ($this->user_model->check_password($this->input->post('password'), $user['password'])) {
+                // mark user as logged in
+                $this->auth->login($user['id'], $remember);
+                redirect('admin');
+            } else {
+                $error = "Wrong password";
+            }
+        } else {
+            $error = "User does not exist";
+        }
+    }
