@@ -194,9 +194,6 @@ class Auth {
      * @param array $data
      */
     private function write_cookie($data = array()) {
-        echo 'writing cookie: <br>';
-        print_r($data);
-        
         $data = serialize($data);
         
         // encrypt cookie
@@ -227,9 +224,6 @@ class Auth {
         }
         
         $data = @unserialize($data);
-        
-        echo 'reading cookie<br>';
-        print_r($data);
         
         if (isset($data['id']) && isset($data['series']) && isset($data['key'])) {
             return $data;
