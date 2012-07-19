@@ -17,7 +17,7 @@ class Admin extends CI_Controller {
         
         // get user from database
         $this->load->model('user_model');
-        $user = $this->user_model->get('id', $user);
+        $user = $this->user_model->get('id', $id);
         
         echo 'Welcome to the super secret section, ' . $user['username'];
     }
