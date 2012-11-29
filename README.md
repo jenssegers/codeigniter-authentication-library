@@ -1,7 +1,11 @@
 CodeIgniter Secure Authentication Library
 =========================================
 
+**NOTE**: This is a modified version of the origional.
+
+
 This is a secure authentication library for codeigniter.
+-------------
 
 **WARNING**: this is version 2 of this library, a more simplified, easier to use version that is easier to implement in existing code. The original library relied too much on correct model communication that now has been removed. Most of the functionality has been preserved, although some things have been moved to the model as you can see in the example folder.
 
@@ -43,7 +47,7 @@ A simple implementation example of this library is included, so be sure to check
 
     $this->auth->login($id, $remember = TRUE)
 Mark the user with this id as logged in, provide an optional remember boolean if you want to create an autologin cookie
-    
+
     $this->auth->logout()
 Logout function, this removes the autologin cookie and the active key
 
@@ -60,8 +64,8 @@ This library was inspired by the following articles:
 
  - http://www.shinytype.com/php/persistent-login-protocol/
  - http://jaspan.com/improved_persistent_login_cookie_best_practice
- 
-When a user logs in with 'remember me' checked, a login cookie is created containing the user's identification and a personal key. Actually 2 keys are created, one for the user's cookie and one to store into the database. A user can only log in if both key pairs are present. 
+
+When a user logs in with 'remember me' checked, a login cookie is created containing the user's identification and a personal key. Actually 2 keys are created, one for the user's cookie and one to store into the database. A user can only log in if both key pairs are present.
 
 When that user visits the site again, it presents the login cookie. The database version of the key is compared with the key stored in the cookie. If the relation between both keys is correct, the user is logged in, the used key pair will be removed and a new key pair is generated for future use.
 
@@ -77,11 +81,11 @@ Here is an example how you _could_ use the library on your login page:
     // form submitted
     if ($this->input->post('username') && $this->input->post('password')) {
         $remember = $this->input->post('remember') ? TRUE : FALSE;
-        
+
         // get user from database
         $this->load->model('user_model');
         $user = $this->user_model->get('username', $this->input->post('username'));
-        
+
         if ($user) {
             // compare passwords
             if ($this->user_model->check_password($this->input->post('password'), $user['password'])) {

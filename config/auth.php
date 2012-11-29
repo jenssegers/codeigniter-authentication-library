@@ -12,8 +12,10 @@
 | 'hash_algorithm'   = the hashing algorithm used for generating keys
 */
 
-$config['cookie_name']      = 'autologin';
-$config['cookie_encrypt']   = TRUE;
-$config['autologin_table']  = 'autologin';
-$config['autologin_expire'] = 5184000; // 60 days
-$config['hash_algorithm']   = 'sha256';
+$config['autologin_cookie_name']    = 'autologin';
+$config['autologin_cookie_encrypt'] = TRUE;
+$config['autologin_table']          = 'autologin';
+$config['autologin_expire']         = 5184000; // 60 days
+$config['autologin_hash_algorithm'] = 'sha256';
+
+// eof.
